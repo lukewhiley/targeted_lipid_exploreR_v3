@@ -1,0 +1,1426 @@
+---
+title: "Lipid manuscript - multiplate batch"
+output:
+  html_document:
+    df_print: paged
+---
+
+<!-- WELCOME TO metaBOOK
+
+IMPORTANT INFORMATION PRIOR TO USING..... 
+
+CSV DATA FILES SHOULD CONTAIN THE FOLLOWING COLUMN HEADERS AS A MINIMUM:
+
+- "sample_idx" - numeric column containing numeric index of sample location
+- "sample_name" - column containing string descriptor of sample file name
+- "sample_ID" - column containing string descriptor of sample id
+- "sample_class" - column containing string descriptor of sample class
+- "sample_type" - column containing "sample" or "qc" string
+
+And
+
+- columns for metabolite data with metabolite name as header  - e.g. CE(14:0) ort TRYPTOPHAN or 2.86_180.0882m/z etc
+
+-->
+
+<!-- * USER INPUT REQUIRED FOR HTML REPORT --><!-- load packages and libraries -->
+
+# Project - Lipid Methods paper
+
+Purpose is to evaluate the multi-batch comparison across CABIN, ROCIT and WA COVID cohorts
+
+```{r set up project and load packages, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+
+#### load packages
+package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'ropls', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'fusion', 'stats', 'viridisLite', 'ggbeeswarm')
+
+for(idx_package in package_list){
+  if(length(which(row.names(installed.packages()) == idx_package)) > 0){
+  suppressMessages(require(package = idx_package,
+                                         character.only = TRUE))
+  } else {
+    paste0(idx_package, " is not installed. Please install ", idx_package, " before continuing.") %>% print()
+  }
+}
+
+#source LGW github functions
+github_master_dir <- "https://raw.githubusercontent.com/lukewhiley/metabolomics_code/main/functions"
+#pca script
+master_list$functions$pca <- source(paste0(github_master_dir, "/2021_LGW_FUNC_PCA.R"))
+master_list$functions$miss_value_filter <- source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_missing_value_filter.R"))
+master_list$functions$impute_data <- source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_impute_data.R"))
+master_list$functions$conc_calc <-  source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_conc_calculator.R"))
+master_list$functions$pca_filter <- source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_pca_filter.R"))
+master_list$functions$signal_correct <- source(paste0(github_master_dir,"/LGW_FUNC_signal_drift_correct_v0.1.R"))
+master_list$functions$run_order_plot <- source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_pc_runorder_plot.R"))
+master_list$functions$uni_stats_boxplots <- source(paste0(github_master_dir, "/2021_LGW_FUNC_compare_means_ggplot_boxplots.R"))
+master_list$functions$lipid_plot <- source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_plot_3D.R"))
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+```
+
+<!-- USER INPUT: set project options -->
+
+```{r, set up project structure, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+#set up project master list
+master_list <- list()
+master_list$project_details <- list()
+master_list$functions <- list()
+master_list$tables <- list()
+master_list$data <- list()
+master_list$pca <- list()
+master_list$lists <- list()
+
+##USER INPUT##
+#set project details
+#set user
+master_list$project_details$user_name <- "LGW"
+#set project name
+master_list$project_details$project_name <- "lipid paper - multiplate batch"
+#set project directory
+master_list$project_details$project_dir <- "/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch"
+
+```
+
+
+<!-- 
+
+SECTION 1: READ IN SKYLINE EXPORT DATA 
+
+Here, this section will import data generated in skyline. Prior to this step the data should have been processed on a per plate basis through the ANPC skylineR script. 
+
+data should be stored as:
+
+-> a single csv for each sample plate in the project 
+-> should be stored in the project directory, in the subfolder  ~project_directory/data/skyline_exports
+
+-->
+
+
+```{r, read in skyline data, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+######
+
+master_list$data$skyline <- list()
+
+#add data subfolder here
+subfolder <- "/data/skyline_exports"
+
+#filelist of datafiles from project path to undergo analysis. Data must be stored in /data sub folder.
+data_filelist <- list.files(path = paste0(master_list$project_details$project_dir, subfolder),
+                            pattern = ".csv",
+                            full.names = TRUE)
+
+for(idx_data in (data_filelist)){
+  #extract filename from path for tidier data storage in list
+ idx_data_sub <- gsub(x = strsplit(idx_data, paste0(subfolder, "/"))[[1]][2], 
+                         pattern = ".csv", 
+                         replacement = "")
+  
+  master_list$data$skyline[[idx_data_sub]] <- read_csv(paste0(idx_data), show_col_types = FALSE) %>%
+    clean_names()
+}
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+
+<!-- SECTION 2: flip data to standard metabolomics structure (features in columns, samples in rows)  
+
+NO USER INPUT NECESSARY -->
+
+### Data summary 1
+
+```{r, transpose data, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$data$transposed <- list()
+master_list$tables$data$transposed_summary <- tibble()
+
+for(idx_data in names(master_list$data$skyline)){
+  #create array of unique features
+  lipid_features <- master_list$data$skyline[[idx_data]]$peptide %>% unique()
+  
+  #create array of unique samples in the list
+  master_list$data$transposed[[idx_data]] <- 
+    master_list$data$skyline[[idx_data]]$replicate %>% 
+    unique() %>% 
+    as_tibble() %>% 
+    rename(sample_name = value)
+  
+  for (idx_lipid in lipid_features){
+     master_list$data$transposed[[idx_data]] <-
+       left_join(master_list$data$transposed[[idx_data]],
+                 master_list$data$skyline[[idx_data]] %>%
+                   filter(peptide == idx_lipid) %>%
+                   select(replicate, area) %>%
+                   rename_with(~all_of(idx_lipid), "area") %>%
+                   rename(sample_name = replicate),
+                 by = "sample_name")
+  }
+  
+  #make numeric 
+master_list$data$transposed[[idx_data]][,-1] <-
+  sapply(master_list$data$transposed[[idx_data]][,-1], 
+         as.numeric) %>% 
+  as_tibble()
+
+#make summary table
+master_list$tables$data$transposed_summary <- master_list$tables$data$transposed_summary %>% rbind(
+  c(idx_data,
+  nrow(master_list$data$transposed[[idx_data]]),
+  ncol(master_list$data$transposed[[idx_data]] %>% 
+           select(-contains("sample")))
+    )
+  )
+}
+
+master_list$tables$data$transposed_summary <- master_list$tables$data$transposed_summary %>%
+  setNames(
+    c("project", "total samples", "total metabolite features"))
+
+print(master_list$tables$data$transposed_summary)
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+```
+
+
+<!-- SECTION: check for missing values in dataset  
+section also saves an RDA file for loading at a later date - to do this user must create a subfolder:
+~project_directory/data/rda -->
+
+## Checkpoint 1 for missing values
+
+```{r, checkpoint 1 - missing data and save progress, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$tables$missing_data_check_1 <- list()
+
+temp_missing_data <- NULL
+
+for(idx_data in names(master_list$data$transposed)){
+  temp_missing_data <- temp_missing_data %>% rbind(
+    c(
+    length(which(master_list$data$transposed[[idx_data]] %>% select(!contains("sample"))==0)),
+    length(which(is.na(as.matrix(master_list$data$transposed[[idx_data]] %>% select(!contains("sample")))))),
+    length(which(is.nan(as.matrix(master_list$data$transposed[[idx_data]] %>% select(!contains("sample"))))))
+    )
+  )
+} 
+
+master_list$tables$missing_data_check_1 <- names(master_list$data$transposed) %>% tibble() %>% rename("batch" = ".") %>%
+  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values"))); 
+
+
+## save and load as appropriate
+save(master_list,
+     file = paste0(
+       master_list$project_details$project_dir,
+       "/data/rda_files/", Sys.Date(), "-master_list_checkpoint_1.rda"))
+
+# load(file = "/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/", Sys.Date(), "2022_05_30-master_list_checkpoint_1.rda")
+
+
+print(master_list$tables$missing_data_check_1)
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+
+<!-- SECTION: sort run order and add annotation data 
+-> write csv out to:
+  -> ~project_directory/run_order/r_output
+-> user must the manually edit run order and add the following sample headings:
+  -> sample_idx - numeric index of the sample
+  -> sample_name - file name of each sample
+  -> sample_type - string containing "sample" or "qc"
+  -> sample_batch - batch descrriptor e.g. project name (WA_COVID etc)
+  -> sample_plate_id - numeric descriptor of the plate number
+  -> sample_plate_order - numeric descriptor of the run order on the plate
+  
+-->
+
+## add annotation data and put in correct run order
+
+```{r, sort by run order, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+# step 1 - write out sample lists
+
+for (idx_data in names(master_list$data$concentration)){
+  write_csv(master_list$data$transposed[[idx_data]] %>%
+              select(sample_name),
+            file = paste0(
+          master_list$project_details$project_dir,
+          "/run_order/r_output/",
+                          idx_data,
+                          "_unedited_sample_list.csv"))
+
+}
+
+# step 2 - read in edited sample lists
+#list for storing run orders
+master_list$project_details$run_orders <- list()
+#list for storing concntration data sorted by run order
+master_list$data$sorted <- list()
+
+#run loop
+for (idx_data in names(master_list$data$transposed)){
+  master_list$project_details$run_orders[[idx_data]] <- read_csv(
+    file = paste0(
+      master_list$project_details$project_dir,
+      "/run_order/", 
+      idx_data,
+      "_edited_sample_list.csv"),
+    show_col_types = FALSE)
+  
+  #correct run order of concentration data
+  master_list$data$sorted[[idx_data]] <- master_list$project_details$run_orders[[idx_data]] %>%
+    left_join(master_list$data$transposed[[idx_data]],
+              by = "sample_name") %>%
+    filter(sample_type == "qc" | sample_type == "sample")
+   
+  master_list$data$sorted[[idx_data]] <- master_list$data$sorted[[idx_data]] %>%
+    add_column(sample_type_factor =
+               master_list$data$sorted[[idx_data]]$sample_type %>% factor(levels = c("qc", "sample"), ordered = TRUE),
+               .after = "sample_type")
+}
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+<!-- PCA plot of raw data; uncorrected and with missing values -->
+
+```{r, PCA plot of sorted raw data, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#create empty list for results
+master_list$pca$data_sorted <- list()
+
+#run pca loop
+for(idx_data in names(master_list$data$sorted)){
+  
+master_list$pca$data_sorted[[idx_data]] <- lgw_pca(
+  FUNC_data = master_list$data$sorted[[idx_data]],
+  FUNC_metabolite_list = master_list$data$sorted[[idx_data]] %>%
+      select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor",
+  FUNC_plot_label = "sample_name", 
+  FUNC_scaling = "UV",
+  FUNC_title = paste0(idx_data),
+  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_option_invert_y = FALSE,
+  FUNC_option_invert_x = FALSE,
+  FUNC_option_plot_qc = TRUE
+  )
+
+print(master_list$pca$data_sorted[[idx_data]]$plot_scores)
+  }
+  
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+# DATA FILTERING
+## Missing value filter: 
+Step 1: Remove all samples that have > 50% missing values (removes mis injecitons etc)
+Step 2: Remove all features that have over 50% missing values (zero or NA)
+
+```{r, missing value filter, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$data$list_missing_value_filter <- list()
+master_list$data$missing_value_filter <- list()
+master_list$tables$missing_value_filter_summary <- tibble()
+
+for(idx_data in names(master_list$data$sorted)){
+   master_list$data$list_missing_value_filter[[idx_data]]$sample_fail_list <- NULL
+    master_list$data$list_missing_value_filter[[idx_data]]$feature_fail_list <- NULL
+  for(idx_sample_type in c("sample", "qc")){
+    master_list$data$list_missing_value_filter[[idx_data]][[idx_sample_type]] <- list()
+    master_list$data$list_missing_value_filter[[idx_data]][[idx_sample_type]] <- lgw_missing_value_filter(
+      FUNC_data = master_list$data$sorted[[idx_data]] %>%
+        filter(sample_type == idx_sample_type),
+FUNC_metabolite_list = master_list$data$sorted[[idx_data]] %>%
+  select(!contains("sample")) %>% names(),
+FUNC_IS_tag = "SIL",
+FUNC_OPTION_missing_value_threshold = 50,
+FUNC_OPTION_intensity_threshold = 5000)
+  
+    #bind fail sample list
+    master_list$data$list_missing_value_filter[[idx_data]]$sample_fail_list <- c(
+      master_list$data$list_missing_value_filter[[idx_data]]$sample_fail_list,
+      master_list$data$list_missing_value_filter[[idx_data]][[idx_sample_type]]$mv_samples_fail) %>%
+      unique()
+    
+       #bind fail featire list
+    master_list$data$list_missing_value_filter[[idx_data]]$feature_fail_list <- c(
+      master_list$data$list_missing_value_filter[[idx_data]]$feature_fail_list,
+      master_list$data$list_missing_value_filter[[idx_data]][[idx_sample_type]]$mv_features_fail) %>%
+      unique()
+    }
+
+  #select only pass samples
+  master_list$data$missing_value_filter[[idx_data]] <- master_list$data$sorted[[idx_data]] %>%
+    filter(!sample_name %in% master_list$data$list_missing_value_filter[[idx_data]]$sample_fail_list) %>%
+    #select only pass features
+    select(-all_of(master_list$data$list_missing_value_filter[[idx_data]]$feature_fail_list))
+#   
+#   
+  master_list$tables$missing_value_filter_summary <-  master_list$tables$missing_value_filter_summary %>%
+    bind_rows(
+      bind_cols("batch" = idx_data,
+                "samples pre-filter" = master_list$data$sorted[[idx_data]] %>% nrow(),
+                "samples post-filter" = master_list$data$missing_value_filter[[idx_data]] %>% nrow(),
+                "samples removed" = master_list$data$sorted[[idx_data]] %>% nrow() -
+                  master_list$data$missing_value_filter[[idx_data]] %>% nrow(),
+                "features pre-filter" = master_list$data$sorted[[idx_data]] %>% select(-contains("sample")) %>% ncol(),
+                "features post-filter" = master_list$data$missing_value_filter[[idx_data]] %>% select(-contains("sample")) %>% ncol(),
+                "features removed" = master_list$data$sorted[[idx_data]] %>% select(-contains("sample")) %>% ncol() -
+                  master_list$data$missing_value_filter[[idx_data]] %>% select(-contains("sample")) %>% ncol()
+      )
+    )
+}
+# 
+print(master_list$tables$missing_value_filter_summary)
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+<!-- PCA plot of data with samples and features missing value filtered -->
+
+```{r, PCA plot of missing value filtered data, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#create empty list for results
+master_list$pca$missing_value_filter <- list()
+
+#run pca loop
+for(idx_data in names(master_list$data$missing_value_filter)){
+  
+master_list$pca$missing_value_filter[[idx_data]] <- lgw_pca(
+  FUNC_data = master_list$data$missing_value_filter[[idx_data]],
+  FUNC_metabolite_list = master_list$data$missing_value_filter[[idx_data]] %>%
+      select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor",
+  FUNC_plot_label = "sample_name", 
+  FUNC_scaling = "UV",
+  FUNC_title = paste0(idx_data),
+  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_option_invert_y = FALSE,
+  FUNC_option_invert_x = FALSE,
+  FUNC_option_plot_qc = TRUE
+  )
+
+print(master_list$pca$missing_value_filter[[idx_data]]$plot_scores)
+  }
+  
+#clean environment
+#rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+## Impute remaining missing values to remove 0 and NA from the dataset
+
+```{r, impute any remaining missing data, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#user input
+impute_missing_data <- TRUE
+
+master_list$data$impute <- list()
+master_list$tables$impute_table <- tibble()
+
+for(idx_data in names(master_list$data$sorted)){
+  
+ master_list$data$impute[[idx_data]] <- lgw_lipid_impute(FUNC_data = master_list$data$sorted[[idx_data]],
+                    FUNC_metabolite_list = master_list$data$sorted[[idx_data]] %>% 
+                    select(-contains("sample")) %>% names(),
+                  FUNC_option_impute_missing_data = TRUE)
+
+#create summary tibble
+master_list$tables$impute_table <-  master_list$tables$impute_table %>%
+  bind_rows(
+  bind_cols("batch" = idx_data,
+            "missing values pre-imputation" = c(which(master_list$data$sorted[[idx_data]] %>% select(-contains("sample")) == 0),
+                                                which(is.na(master_list$data$sorted[[idx_data]] %>% select(-contains("sample"))))) %>% length(),
+            "missing values post-filter" = c(which(master_list$data$impute[[idx_data]] %>% select(-contains("sample")) == 0),
+                                        which(is.na(master_list$data$impute[[idx_data]] %>% select(-contains("sample"))))) %>% length(),
+            "data_points imputed" = c(which(master_list$data$sorted[[idx_data]] %>% select(-contains("sample")) == 0),
+                                      which(is.na(master_list$data$sorted[[idx_data]] %>% select(-contains("sample"))))) %>% length() - 
+              which(master_list$data$impute[[idx_data]] %>% select(-contains("sample")) == 0) %>% length()
+            ))
+
+}
+
+print(master_list$tables$impute_table)
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+  
+```
+
+<!-- PCA plot of imputed data -->
+
+```{r, PCA plot of missing value filtered data, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#create empty list for results
+master_list$pca$imputed <- list()
+
+#run pca loop
+for(idx_data in names(master_list$data$impute)){
+  
+master_list$pca$imputed[[idx_data]] <- lgw_pca(
+  FUNC_data = master_list$data$impute[[idx_data]],
+  FUNC_metabolite_list = master_list$data$impute[[idx_data]] %>%
+      select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor",
+  FUNC_plot_label = "sample_name", 
+  FUNC_scaling = "UV",
+  FUNC_title = paste0(idx_data),
+  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_option_invert_y = FALSE,
+  FUNC_option_invert_x = FALSE,
+  FUNC_option_plot_qc = TRUE
+  )
+
+print(master_list$pca$imputed[[idx_data]]$plot_scores)
+  }
+  
+#clean environment
+#rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+## calculate target/stable isotope labelled (SIL) internal standard ratio and concentration
+
+```{r, create response ratio and concentration, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$data$concentration <- list()
+
+for(idx_data in names(master_list$data$impute)){
+  master_list$data$concentration[[idx_data]] <- lgw_lipid_conc_calc(FUNC_data = master_list$data$impute[[idx_data]],
+ FUNC_metabolite_list = master_list$data$impute[[idx_data]] %>% 
+   select(!contains("sample")) %>% names(),
+ FUNC_SIL_guide_path =  paste0(master_list$project_details$project_dir,"/sciex_templates/2021-09-21-LGW_lipid_mrm_transition_data.csv"),
+ FUNC_conc_guide_path = paste0(master_list$project_details$project_dir, "/sciex_templates/2021-LGW_SIL_batch_103.csv"))
+}
+  
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+
+## Checkpoint 2 for missing values
+
+```{r, checkpoint 2 - missing data and save progress after conc calc, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$tables$missing_data_check_2 <- list()
+
+temp_missing_data <- NULL
+
+for(idx_data in names(master_list$data$concentration)){
+  temp_missing_data <- temp_missing_data %>% rbind(
+    c(
+    length(which(master_list$data$concentration[[idx_data]] %>% select(!contains("sample"))==0)),
+    length(which(is.na(as.matrix(master_list$data$concentration[[idx_data]] %>% select(!contains("sample")))))),
+    length(which(is.nan(as.matrix(master_list$data$concentration[[idx_data]] %>% select(!contains("sample"))))))
+    )
+  )
+} 
+
+master_list$tables$missing_data_check_2 <- names(master_list$data$concentration) %>% tibble() %>% rename("batch" = ".") %>%
+  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values"))); 
+
+
+## save and load as appropriate
+save(master_list,
+     file = paste0(
+       master_list$project_details$project_dir,
+       "/data/rda_files/", Sys.Date(), "master_list_checkpoint_2.rda"))
+
+# load(file = "/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/", Sys.Date(), "2022_05_30-master_list_checkpoint_2.rda")
+
+
+print(master_list$tables$missing_data_check_2)
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+<!-- PCA plot of concentration data -->
+
+```{r, PCA plot of missing value filtered data, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#create empty list for results
+master_list$pca$concentration <- list()
+
+#run pca loop
+for(idx_data in names(master_list$data$concentration)){
+  
+master_list$pca$concentration[[idx_data]] <- lgw_pca(
+  FUNC_data = master_list$data$concentration[[idx_data]],
+  FUNC_metabolite_list = master_list$data$concentration[[idx_data]] %>%
+      select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor",
+  FUNC_plot_label = "sample_name", 
+  FUNC_scaling = "UV",
+  FUNC_title = paste0(idx_data),
+  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_option_invert_y = FALSE,
+  FUNC_option_invert_x = FALSE,
+  FUNC_option_plot_qc = TRUE
+  )
+
+print(master_list$pca$concentration[[idx_data]]$plot_scores)
+  }
+  
+```
+
+## Sample filter: PC variation filter (in development)
+Filter to remove all samples that have excessive principal component variation
+Step 1 : Create PCA scores for PC 1:3
+Step 2: Find samples with PC score > 1.5 standard deviation of median PC
+
+
+<!-- PC variation filter test -->
+
+```{r, PC variation filter, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#create empty list for results
+master_list$data$list_pc_filter <- list()
+master_list$data$pc_filter <- list()
+master_list$tables$pc_filter_summary <- tibble() # sample summary post filtering
+
+qc_fail = NULL
+sample_fail = NULL
+
+#run pca loop
+for(idx_data in names(master_list$data$concentration)){
+  
+master_list$data$list_pc_filter[[idx_data]] <- lgw_pca_filter(
+  FUNC_data = master_list$data$concentration[[idx_data]],
+  FUNC_metabolite_list = master_list$data$concentration[[idx_data]] %>%
+      select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor",
+  FUNC_plot_label = "sample_name", 
+  FUNC_scaling = "UV",
+  FUNC_title = paste0(idx_data),
+  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_option_invert_y = FALSE,
+  FUNC_option_invert_x = FALSE,
+  FUNC_option_plot_qc = TRUE,
+  FUNC_option_iqr_filter_samples = 2.5,
+  FUNC_option_iqr_filter_qc = 5
+)
+
+#print(master_list$pca_filter[[idx_data]]$plot_scores)
+print(master_list$data$list_pc_filter[[idx_data]]$PC1$plotly)
+print(master_list$data$list_pc_filter[[idx_data]]$PC2$plotly)
+print(master_list$data$list_pc_filter[[idx_data]]$PC3$plotly)
+
+ qc_fail <- c(qc_fail, 
+               length(which(grepl("LTR",master_list$data$list_pc_filter[[idx_data]]$fail_list))))
+  
+  sample_fail <- c(sample_fail, 
+               length(which(!grepl("LTR",master_list$data$list_pc_filter[[idx_data]]$fail_list))))
+
+#create filtered dataset
+master_list$data$pc_filter[[idx_data]] <- master_list$data$concentration[[idx_data]] %>%
+  filter(!sample_name %in% master_list$data$list_pc_filter[[idx_data]]$fail_list)
+
+master_list$tables$pc_filter_summary <- master_list$tables$pc_filter_summary %>% rbind(
+  c(idx_data,
+    nrow(master_list$data$concentration[[idx_data]]),
+  nrow(master_list$data$pc_filter[[idx_data]])
+    )
+  )
+}
+
+#set names on summary table
+master_list$tables$pc_filter_summary <- master_list$tables$pc_filter_summary %>%
+  setNames(c("project", "total samples pre-filter", "total samples post-filter"))
+
+# finalise summary table of removed samples
+master_list$tables$pc_filter_summary <- master_list$tables$pc_filter_summary %>%
+  bind_cols("failed samples" = sample_fail,
+            "failed qc" = qc_fail
+            ) 
+
+print(master_list$tables$pc_filter_summary)
+
+```
+
+## PCA of PC filtered data: 
+PCA of the data that had outlier samples removed by the PC filter
+
+```{r, PCA plot of PC filtered data, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#create empty list for results
+master_list$pca$pc_filter <- list()
+
+#run pca loop
+for(idx_data in names(master_list$data$pc_filter)){
+  
+master_list$pca$pc_filter[[idx_data]] <- lgw_pca(
+  FUNC_data = master_list$data$pc_filter[[idx_data]],
+  FUNC_metabolite_list = master_list$data$pc_filter[[idx_data]] %>%
+      select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor",
+  FUNC_plot_label = "sample_name", 
+  FUNC_scaling = "UV",
+  FUNC_title = paste0(idx_data),
+  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_option_invert_y = FALSE,
+  FUNC_option_invert_x = FALSE,
+  FUNC_option_plot_qc = TRUE
+  )
+
+print(master_list$pca$pc_filter[[idx_data]]$plot_scores)
+  }
+  
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+
+## Checkpoint 3 for missing values
+
+```{r, checkpoint 3 - missing data and save progress, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$tables$missing_data_check_3 <- list()
+
+temp_missing_data <- NULL
+
+for(idx_data in names(master_list$data$pc_filter)){
+  temp_missing_data <- temp_missing_data %>% rbind(
+    c(
+    length(which(master_list$data$pc_filter[[idx_data]] %>% select(!contains("sample"))==0)),
+    length(which(is.na(as.matrix(master_list$data$pc_filter[[idx_data]] %>% select(!contains("sample")))))),
+    length(which(is.nan(as.matrix(master_list$data$pc_filter[[idx_data]] %>% select(!contains("sample"))))))
+    )
+  )
+} 
+
+master_list$tables$missing_data_check_3 <- names(master_list$data$pc_filter) %>% tibble() %>% rename("batch" = ".") %>%
+  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values"))); 
+
+
+## save and load as appropriate
+save(master_list,
+     file = paste0(
+       master_list$project_details$project_dir,
+       "/data/rda_files/", Sys.Date(), "-master_list_checkpoint_3.rda"))
+
+# load(file = paste0("/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/", Sys.Date(), "-master_list_checkpoint_3.rda"))
+
+
+print(master_list$tables$missing_data_check_3)
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+
+## Signal drift and batch correct the data (per project)
+
+```{r, batch-signal drift correct (per project), eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#list for storing signal drift corrected data (per project)
+master_list$data$corrected_individual_batch <- list()
+
+#run loop
+for (idx_data in names(master_list$data$pc_filter)){
+ 
+  #####################################
+  #  run batch correction PER PROJECT #
+  #####################################
+  
+  master_list$data$corrected_individual_batch[[idx_data]] <- lgw_signal_correction(
+    FUNC_project_directory = paste0(master_list$project_details$project_dir,
+                                    "/per_project_batch_correction/",
+                                    idx_data),
+    FUNC_data = master_list$data$pc_filter[[idx_data]],
+    FUNC_metabolite_list = master_list$data$pc_filter[[idx_data]] %>%
+      select(-contains("sample")) %>% names(),
+    FUNC_header_sample_id = "sample_name",
+    FUNC_header_batch = "sample_plate_id",
+    FUNC_header_sample_type = "sample_type",
+    FUNC_header_run_order = "sample_idx",
+    FUNC_option_method = "RF",
+    FUNC_option_coCV = 30
+    )
+  
+  # for(idx_data_2 in names(master_list$data$corrected_individual_batch[[idx_data]])){
+  #   #create levels to allow control of plot order
+  # master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]] <- master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]] %>%
+  #   add_column(
+  #     sample_type_factor = master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]]$sample_type %>%
+  #       factor(levels = c("qc", "sample"), ordered = TRUE),
+  #     .after = "sample_type"
+  #   )
+}
+
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+## Checkpoint 4 for missing values
+
+```{r, checkpoint 4 - after batch correction (per project), eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$tables$missing_data_check_4 <- list()
+
+for(idx_data_2 in names(master_list$data$corrected_individual_batch[[1]])){
+  temp_missing_data <- NULL
+for(idx_data in names(master_list$data$corrected_individual_batch)){
+  temp_missing_data <- temp_missing_data %>% rbind(
+    c(
+    length(which(master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]] %>% select(!contains("sample"))==0)),
+    length(which(is.na(as.matrix(master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]] %>% select(!contains("sample")))))),
+    length(which(is.nan(as.matrix(master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]] %>% select(!contains("sample"))))))
+    )
+  )
+} 
+  master_list$tables$missing_data_check_4[[idx_data_2]] <- names(master_list$data$corrected_individual_batch) %>% tibble() %>% rename("batch" = ".") %>%
+  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values")))
+}
+
+# master_list$tables$missing_data_check_4 <- names(master_list$data$corrected_individual_batch) %>% tibble() %>% rename("batch" = ".") %>%
+#   cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values")))
+
+
+## save and load as appropriate
+save(master_list,
+     file = paste0(
+       master_list$project_details$project_dir,
+       "/data/rda_files/", Sys.Date(), "-master_list_checkpoint_4.rda"))
+
+# load(file = paste0("/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/", Sys.Date(), "-master_list_checkpoint_4.rda"))
+
+
+print(master_list$tables$missing_data_check_4)
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+```
+
+<!-- SECTION 5: table results post batch correction -->
+
+```{r, table results post per project batch correction, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$data$list_corrected_individual_batch <- list()
+
+
+for(idx_data_2 in names(master_list$data$corrected_individual_batch[[1]])){
+  master_list$data$list_corrected_individual_batch$summary_table[[idx_data_2]] <- tibble()
+  
+  temp_missing_data <- NULL
+
+for(idx_data in names(master_list$data$corrected_individual_batch)){
+ master_list$data$list_corrected_individual_batch$summary_table[[idx_data_2]]  <- master_list$data$list_corrected_individual_batch$summary_table[[idx_data_2]] %>%
+    rbind(
+  c(
+    idx_data,
+  nrow(master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]]),
+  nrow(master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]] %>% 
+           filter(sample_type == "qc")),
+  nrow(master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]] %>% 
+           filter(sample_type == "sample")),
+  ncol(master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]] %>% 
+           select(-contains("sample")))
+    )
+  )
+}
+
+master_list$data$list_corrected_individual_batch$summary_table[[idx_data_2]] <- master_list$data$list_corrected_individual_batch$summary_table[[idx_data_2]] %>%
+  setNames(
+    c(
+      "project",
+      "total samples",
+      "qc",
+      "study samples",
+      "total metabolites <30% RSD in qc"
+    )
+  )
+
+}
+print(master_list$data$list_corrected_individual_batch$summary_table)
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+```
+
+## PCA of PC filtered data: 
+PCA of the data that had outlier samples removed by the PC filter
+
+```{r, PCA plot of batch corrected (per proejct) data, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#create empty list for results
+master_list$pca$corrected_individual_batch <- list()
+
+#run pca loop
+for(idx_data in names(master_list$data$pc_filter)){
+  for(idx_data_2 in names(master_list$data$corrected_individual_batch[[1]])){
+  
+master_list$pca$corrected_individual_batch[[idx_data]][[idx_data_2]] <- lgw_pca(
+  FUNC_data = master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]],
+  FUNC_metabolite_list = master_list$data$corrected_individual_batch[[idx_data]][[idx_data_2]] %>%
+      select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor",
+  FUNC_plot_label = "sample_name", 
+  FUNC_scaling = "UV",
+  FUNC_title = paste0(idx_data, " - ", idx_data_2),
+  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_option_invert_y = FALSE,
+  FUNC_option_invert_x = FALSE,
+  FUNC_option_plot_qc = TRUE
+  )
+
+#print(master_list$pca$corrected_individual_batch[[idx_data]][[idx_data_2]]$plot_scores)
+}
+  print(master_list$pca$corrected_individual_batch[[idx_data]][[idx_data_2]]$plot_scores)
+}
+  
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+```{r, save rda file at checkpoint_5, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+save(master_list,
+     file = paste0(
+       master_list$project_details$project_dir,
+       "/data/rda_files/", Sys.Date(), "-master_list_checkpoint_5.rda"))
+
+# load(file = paste0("/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/", Sys.Date(), "2022_05_30-master_list_checkpoint_4.rda"))
+
+```
+
+
+<!-- Combine all data batches; batch correct; plot -->
+
+```{r, Combine all data batch correct plot, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$data$all_batches_combined <- list()
+
+#combine all data
+master_list$data$all_batches_combined$data <- bind_rows(master_list$data$pc_filter) 
+
+#find intersect column names (only keep column names common across in all projects)
+#set names from first tibble
+common_columns <- names(master_list$data$pc_filter[[1]])
+for(idx_names in names(master_list$data$pc_filter)){
+  common_columns <- intersect(common_columns,
+                              names(master_list$data$pc_filter[[idx_names]]))
+}
+
+#select only common columns
+master_list$data$all_batches_combined$data <- master_list$data$all_batches_combined$data %>%
+  select(all_of(common_columns))
+
+#add_column to combine batch and plate
+master_list$data$all_batches_combined$data <- master_list$data$all_batches_combined$data %>% 
+  add_column(sample_total_batch =
+             paste0(master_list$data$all_batches_combined$data$sample_batch, 
+                    master_list$data$all_batches_combined$data$sample_plate_id
+                    ),
+             .after = "sample_batch")
+
+
+########################### CHECKPOINT #################
+# #check missing values
+# length(which(master_list$data$all_batches_combined==0))
+# #check NA
+# length(which(is.na(master_list$data$all_batches_combined)))
+# 
+# #check NaN
+# which(is.nan(as.matrix(master_list$data$all_batches_combined)))
+
+#find unique batches
+unique_batches <- unique(master_list$data$all_batches_combined$data$sample_total_batch)
+
+for(idx_batch in 1:length(unique_batches)){
+  batch_rows <- which(master_list$data$all_batches_combined$data$sample_total_batch == unique_batches[idx_batch])
+  master_list$data$all_batches_combined$data$sample_total_batch[batch_rows] <- idx_batch
+}
+#convert fron string to numeric
+master_list$data$all_batches_combined$data$sample_total_batch <- 
+  master_list$data$all_batches_combined$data$sample_total_batch %>% as.numeric()
+
+#add idx column for complete dataset
+master_list$data$all_batches_combined$data$sample_idx <- seq(1:nrow(master_list$data$all_batches_combined$data))
+
+master_list$data$all_batches_combined$batch_corrected <- lgw_signal_correction(
+    FUNC_project_directory = paste0(master_list$project_details$project_dir,
+                                    "/total_project_batch_correction/"),
+    FUNC_data = master_list$data$all_batches_combined$data,
+    FUNC_metabolite_list = master_list$data$all_batches_combined$data %>%
+      select(-contains("sample")) %>% names(),
+    FUNC_header_sample_id = "sample_name",
+    FUNC_header_batch = "sample_total_batch",
+    FUNC_header_sample_type = "sample_type",
+    FUNC_header_run_order = "sample_idx",
+    FUNC_option_method = "RF",
+    FUNC_option_coCV = 30
+    )
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+```
+
+
+## Checkpoint 6
+
+
+```{r, checkpoint 6 - missing data and save progress after full data signal drift, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$tables$missing_data_check_6 <- tibble()
+
+for(idx_data_2 in names(master_list$data$all_batches_combined$batch_corrected)){
+  temp_missing_data <- NULL
+
+    temp_missing_data <- temp_missing_data %>% rbind(
+    c(
+    length(which(master_list$data$all_batches_combined$batch_corrected[[idx_data_2]] %>% select(!contains("sample"))==0)),
+    length(which(is.na(as.matrix(master_list$data$all_batches_combined$batch_corrected[[idx_data_2]] %>% select(!contains("sample")))))),
+    length(which(is.nan(as.matrix(master_list$data$all_batches_combined$batch_corrected[[idx_data_2]] %>% select(!contains("sample"))))))
+    )
+  )
+
+  master_list$tables$missing_data_check_6 <- bind_rows(master_list$tables$missing_data_check_6,
+    idx_data_2 %>%
+  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values")))
+  )
+}
+
+print(master_list$tables$missing_data_check_6 )
+
+
+
+## save and load as appropriate
+save(master_list,
+     file = paste0(
+       master_list$project_details$project_dir,
+       "/data/rda_files/", Sys.Date(), "-master_list_checkpoint_6.rda"))
+
+# load(file = paste0("/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/2022-06-03-master_list_checkpoint_6.rda"))
+
+
+
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+```
+
+<!-- SECTION: summary of final dataset-->
+
+```{r, table results post per project batch correction and outlier removal, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$tables$final_data_summary <- tibble()
+
+ master_list$tables$final_data_summary <- master_list$tables$final_data_summary %>%
+    rbind(
+  c(
+    "total datset",
+  nrow(master_list$data$all_batches_combined$batch_corrected$concentration_data),
+  nrow(master_list$data$all_batches_combined$batch_corrected$concentration_data %>% 
+           filter(sample_type == "qc")),
+  nrow(master_list$data$all_batches_combined$batch_corrected$concentration_data %>% 
+           filter(sample_type == "sample")),
+  ncol(master_list$data$all_batches_combined$batch_corrected$concentration_data %>% 
+           select(-contains("sample")))
+    )
+  )
+
+master_list$tables$final_data_summary <- master_list$tables$final_data_summary %>%
+  setNames(
+    c(
+      "project",
+      "total samples",
+      "qc",
+      "study samples",
+      "total metabolites <30% RSD in qc"
+    )
+  )
+
+print(master_list$tables$final_data_summary)
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+```
+
+<!-- SECTION 9: plot PCA for total batch corrected data -->
+
+```{r, PCA (all datasets), eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#create empty list for results
+master_list$pca$final_dataset <- list()
+
+#before batch correction
+
+#create PCA
+master_list$pca$final_dataset$pre_correction <- lgw_pca(
+  FUNC_data = master_list$data$all_batches_combined$data,
+  FUNC_metabolite_list = master_list$data$all_batches_combined$data %>%
+      select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor",
+  FUNC_plot_label = "sample_name", 
+  FUNC_scaling = "UV",
+  FUNC_title = paste0("PCA of total dataset - pre-batch correction "),
+  FUNC_project_colours = c( "steelblue2", "white"),
+  FUNC_option_invert_y = FALSE,
+  FUNC_option_invert_x = FALSE,
+  FUNC_option_plot_qc = TRUE
+  )
+
+print(master_list$pca$final_dataset$pre_correction$plot_scores)
+
+for(idx_data_2 in names(master_list$data$all_batches_combined$batch_corrected)){
+
+#create PCA
+master_list$pca$final_dataset[[idx_data_2]] <- lgw_pca(
+  FUNC_data = master_list$data$all_batches_combined$batch_corrected[[idx_data_2]],
+  FUNC_metabolite_list = master_list$data$all_batches_combined$batch_corrected[[idx_data_2]] %>%
+      select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor",
+  FUNC_plot_label = "sample_name", 
+  FUNC_scaling = "UV",
+  FUNC_title = paste0("PCA of total dataset - post-batch correction ", idx_data_2),
+  FUNC_project_colours = c( "steelblue2", "white"),
+  FUNC_option_invert_y = FALSE,
+  FUNC_option_invert_x = FALSE,
+  FUNC_option_plot_qc = TRUE
+  )
+
+#print(master_list$pca$final_dataset[[idx_data_2]]$plot_scores)
+}
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+```
+
+
+## FINAL PLOT 
+Step 1: create PCA
+Step 2: extract PC scores
+Step 3: plot PC scores in run order to observed multivariate variation in the dataset over time
+
+<!-- SECTION : all dataset plot -->
+
+```{r, all_dataset plot, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$pc_run_plot <- list()
+
+
+#step 1 - create a sample_type_factor_rev column to reverse plot plotting order so that QCs are plotted on top.
+
+#step 1.1 for non-batch corrected data
+if(length(which(names(master_list$data$all_batches_combined$data) == "sample_type_factor_rev")) == 0){
+master_list$data$all_batches_combined$data <- master_list$data$all_batches_combined$data %>%
+  add_column(sample_type_factor_rev =
+               factor(master_list$data$all_batches_combined$data$sample_type, levels = c("sample", "qc"), ordered = TRUE),
+             .after = "sample_type_factor")
+}
+
+#step 1.2 for batch corrected data
+if(length(which(names(master_list$data$all_batches_combined$batch_corrected$concentration_data) == "sample_type_factor_rev")) == 0){
+master_list$data$all_batches_combined$batch_corrected$concentration_data <- master_list$data$all_batches_combined$batch_corrected$concentration_data %>%
+  add_column(sample_type_factor_rev =
+               factor(master_list$data$all_batches_combined$batch_corrected$concentration_data$sample_type, levels = c("sample", "qc"), ordered = TRUE),
+             .after = "sample_type_factor")
+}
+
+
+# Step 2. Produce plots:
+#Step 2.1 for non-batch corrected data
+master_list$pc_run_plot$data_raw <- list()
+master_list$pc_run_plot$data_raw$all_data <- list()
+master_list$pc_run_plot$data_raw$all_data <- lgw_pc_run_plot(FUNC_data = master_list$data$all_batches_combined$data,
+FUNC_metabolite_list = master_list$data$all_batches_combined$data %>%
+  select(-contains("sample")) %>% names(),
+FUNC_colour_by = "sample_type_factor_rev",
+FUNC_plot_label = "sample_name",
+FUNC_scaling = "UV",
+FUNC_title = paste0("PC run order plot - uncorrected data"),
+FUNC_project_colours = c("white", "steelblue2"),
+FUNC_option_plot_qc = TRUE
+)
+
+#Step 2.2 for batch corrected data
+master_list$pc_run_plot$data_batch_corrected <- list()
+master_list$pc_run_plot$data_batch_corrected <- list()
+master_list$pc_run_plot$data_batch_corrected$all_data <- list()
+master_list$pc_run_plot$data_batch_corrected$all_data <- lgw_pc_run_plot(FUNC_data = master_list$data$all_batches_combined$batch_corrected$concentration_data,
+FUNC_metabolite_list = master_list$data$all_batches_combined$batch_corrected$concentration_data %>%
+  select(-contains("sample")) %>% names(),
+FUNC_colour_by = "sample_type_factor_rev",
+FUNC_plot_label = "sample_name",
+FUNC_scaling = "UV",
+FUNC_title = paste0("PC run order plot - batch corrected"),
+FUNC_project_colours = c("white", "steelblue2"),
+FUNC_option_plot_qc = TRUE
+)
+
+#step 3: print plots
+#master_list$pc_run_plot$data
+#master_list$pc_run_plot$data_batch_corrected
+
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+```
+
+
+
+## FINAL PLOT PER LIPID CLASS
+Step 1: create PCA per lipid class
+Step 2: extract PC scores per lipid class
+Step 3: plot PC scores in run order to observed multivariate variation in the dataset over time
+
+<!-- SECTION : per lipid class dataset plot -->
+
+```{r, per lipid class  plot, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#step 1: create list of unique lipid classes
+#for raw data
+master_list$data$all_batches_combined$metabolite_list <- master_list$data$all_batches_combined$batch_corrected$concentration_data %>% select(-contains("sample")) %>% names()
+master_list$data$all_batches_combined$lipid_class_list <- sub("\\(.*", "", master_list$data$all_batches_combined$metabolite_list) %>% unique()
+
+
+# Step 2. Produce plots:
+for(idx_lipid in master_list$data$all_batches_combined$lipid_class_list){
+
+#Step 2.1 for non-batch corrected data
+master_list$pc_run_plot$data_raw[[idx_lipid]] <- list()
+master_list$pc_run_plot$data_raw[[idx_lipid]] <- lgw_pc_run_plot(FUNC_data = master_list$data$all_batches_combined$data,
+FUNC_metabolite_list = master_list$data$all_batches_combined$data %>%
+  select(-contains("sample")) %>% select(starts_with(paste0(idx_lipid, "("))) %>% names(),
+FUNC_colour_by = "sample_type_factor_rev",
+FUNC_plot_label = "sample_name",
+FUNC_scaling = "UV",
+FUNC_title = paste0(idx_lipid, ": PC run order plot - uncorrected data"),
+FUNC_project_colours = c("white", "steelblue2"),
+FUNC_option_plot_qc = TRUE
+)
+
+#Step 2.2 for batch corrected data
+master_list$pc_run_plot$data_batch_corrected[[idx_lipid]] <- list()
+master_list$pc_run_plot$data_batch_corrected[[idx_lipid]] <- lgw_pc_run_plot(FUNC_data = master_list$data$all_batches_combined$batch_corrected$concentration_data,
+FUNC_metabolite_list = master_list$data$all_batches_combined$batch_corrected$concentration_data %>%
+  select(-contains("sample")) %>% select(starts_with(paste0(idx_lipid, "("))) %>% names(),
+FUNC_colour_by = "sample_type_factor_rev",
+FUNC_plot_label = "sample_name",
+FUNC_scaling = "UV",
+FUNC_title = paste0(idx_lipid, ": PC run order plot - batch corrected"),
+FUNC_project_colours = c("white", "steelblue2"),
+FUNC_option_plot_qc = TRUE
+)
+
+}
+
+#step 3: print plots
+#master_list$pc_run_plot$data
+#master_list$pc_run_plot$data_batch_corrected
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+
+```
+
+```{r, print some plots , eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$pca$final_dataset$pre_correction$plot_scores
+master_list$pca$final_dataset$concentration_data$plot_scores
+
+master_list$pc_run_plot$data_raw$all_data$PC1
+master_list$pc_run_plot$data_raw$all_data$PC2
+master_list$pc_run_plot$data_raw$all_data$PC3
+
+master_list$pc_run_plot$data_batch_corrected$all_data$PC1
+master_list$pc_run_plot$data_batch_corrected$all_data$PC2
+master_list$pc_run_plot$data_batch_corrected$all_data$PC3
+
+# idx_print = "PC"
+# 
+# master_list$pc_run_plot$data_raw[[idx_print]]$PC1
+# master_list$pc_run_plot$data_raw[[idx_print]]$PC2
+# master_list$pc_run_plot$data_raw[[idx_print]]$PC3
+# 
+# 
+# master_list$pc_run_plot$data_batch_corrected[[idx_print]]$PC1
+# master_list$pc_run_plot$data_batch_corrected[[idx_print]]$PC2
+# master_list$pc_run_plot$data_batch_corrected[[idx_print]]$PC3
+
+```
+
+
+
+
+```{r, checkpoint 7 - missing data and save progress after full data signal drift, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+## save and load as appropriate
+save(master_list,
+     file = paste0(
+       master_list$project_details$project_dir,
+       "/data/rda_files/", Sys.Date(), "-master_list_checkpoint_7.rda"))
+
+# load(file = paste0("/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/2022-06-06-master_list_checkpoint_7.rda"))
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+```
+
+
+
+```{r, produce lipid plots for manuscript (only for cabin data), eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+master_list$data$cabin <- list()
+master_list$cabin_plots <- list()
+
+#step one - prepare data
+#get data from master final dataset
+master_list$data$cabin$data <- master_list$data$all_batches_combined$data %>%
+  filter(sample_batch == "cabin") %>%
+  filter(sample_type == "sample")
+
+# add column with sample_id extracted form file name
+master_list$data$cabin$data  <- master_list$data$cabin$data  %>%
+  add_column("sample_id" =
+             substring(master_list$data$cabin$data $sample_name,
+                       regexpr("PLASMA_",master_list$data$cabin$data$sample_name)+7),
+             .after = "sample_name") 
+
+#remove RERUN tag
+master_list$data$cabin$data$sample_id <- sub("RERUN_", "", master_list$data$cabin$data$sample_id)
+
+#further split string to give patient ID and sample ID
+master_list$data$cabin$data <- master_list$data$cabin$data %>%
+  add_column("participant_id" =
+             paste0("id_", sapply(strsplit(master_list$data$cabin$data$sample_id, "_"),"[", 1)),
+             .after = "sample_id") 
+
+#further split string to give timepoint ID
+master_list$data$cabin$data <- master_list$data$cabin$data %>%
+  add_column("timepoint_id" =
+             sapply(strsplit(master_list$data$cabin$data$sample_id, "_"),"[", 2),
+             .after = "participant_id") 
+master_list$data$cabin$data$timepoint_id <- sapply(strsplit(master_list$data$cabin$data$timepoint_id,
+                                                            "CAB"),"[", 1)
+master_list$data$cabin$data$timepoint_id <- gsub(" ", "", master_list$data$cabin$data$timepoint_id)
+master_list$data$cabin$data$timepoint_id[which(master_list$data$cabin$data$timepoint_id==1)] <- "admission"
+master_list$data$cabin$data$timepoint_id[which(master_list$data$cabin$data$timepoint_id==2)] <- "pre-surgery"
+master_list$data$cabin$data$timepoint_id[which(master_list$data$cabin$data$timepoint_id==3)] <- "post-surgery"
+master_list$data$cabin$data$timepoint_id[which(master_list$data$cabin$data$timepoint_id==4)] <- "2wk-followup"
+master_list$data$cabin$data$timepoint_id[which(master_list$data$cabin$data$timepoint_id==5)] <- "6wk-followup"
+master_list$data$cabin$data <- master_list$data$cabin$data %>%
+  filter(timepoint_id != "6") 
+
+#finalise sample_id
+master_list$data$cabin$data$sample_id <-  paste(
+  sapply(strsplit(master_list$data$cabin$data$sample_id, "_"),"[", 1),
+  sapply(strsplit(master_list$data$cabin$data$sample_id, "_"),"[", 2), 
+  sep = "_")
+
+#remove duplicates
+master_list$data$cabin$data <- master_list$data$cabin$data %>% 
+  distinct(sample_id,.keep_all = TRUE)
+
+#add sample_class_factor_column
+master_list$data$cabin$data <- master_list$data$cabin$data %>%
+  add_column("sample_class_factor" =
+               master_list$data$cabin$data$timepoint_id %>% factor(levels = c("admission", 
+                                                                                "pre-surgery", 
+                                                                                "post-surgery", 
+                                                                                "2wk-followup",
+                                                                                "6wk-followup"),
+                                                                   ordered = TRUE),
+             .after="timepoint_id")
+
+#step 2 - complete univaraite statistic on the data
+
+  ## USER INPUT
+  univariate_method <- "wilcox.test.paired" #OPTIONS = kruskal.test, wilcox.test, wilcox.test.paired
+  
+  master_list$cabin_plots$BP <- lgw_compare_means_ggplot_boxplot(
+    FUNC_data = master_list$data$cabin$data,
+    FUNC_metabolite_list = master_list$data$all_batches_combined$metabolite_list,
+    FUNC_class_to_include = c("admission", "pre-surgery", "post-surgery", "2wk-followup", "6wk-followup"),
+    FUNC_HEADER_class = "sample_class_factor",
+    FUNC_HEADER_colour = "sample_class_factor",
+    FUNC_OPTION_colour_choice <- "red", 
+    FUNC_OPTION_log_plot_data = FALSE,
+    FUNC_OPTION_compare_means_method = univariate_method, 
+    FUNC_HEADER_paired = "participant_id", #if paired test is desired add here the linking column header, else = NA
+    FUNC_plot_comparisons = c("admission - pre-surgery",
+                              "admission - post-surgery",
+                              "admission - 2wk-followup",
+                              "admission - 6wk-followup"), ##only required for specific Mann.Whitney; e.g. c("admission - presurgery")
+    FUNC_OPTION_plot_qc = FALSE,
+    FUNC_OPTION_plot_show_legend = TRUE,
+    FUNC_OPTION_plot_outliers = FALSE
+)
+   
+  #create a master tibble of mean comparison stats
+  master_list$results[[idx_data]]$compare_means <- tibble()
+  for(idx_str_feature in names(master_list$results[[idx_data]]$BP)){
+  master_list$results[[idx_data]]$compare_means <- bind_rows(
+    master_list$results[[idx_data]]$compare_means,
+    master_list$results[[idx_data]]$BP[[idx_str_feature]]$stats)
+  }
+  
+  if(master_list$results[[1]]$compare_means$method[1] == "kruskal.wallis"){
+  master_list$results[[idx_data]]$compare_means$p.adj <- p.adjust(p = master_list$results[[idx_data]]$compare_means$p) %>%
+    signif(digits = 2)
+  #create tibble of significant features (ordered by adj p value)
+   master_list$results[[idx_data]]$compare_means_sig <- master_list$results[[idx_data]]$compare_means %>%
+     filter(p < 0.05) %>%
+     arrange(p) %>%
+     select(-p.format) 
+  # tidy up tibble for printing
+master_list$results[[idx_data]]$compare_means_sig$p <- master_list$results[[1]]$compare_means_sig$p %>% signif(digits = 2)
+
+   # tidy up tibble for printing
+master_list$results[[idx_data]]$compare_means$p <- master_list$results[[1]]$compare_means$p %>% signif(digits = 2)
+  }
+  
+  if(master_list$results[[1]]$compare_means$method[1] == "wilcox.test"){
+  master_list$results[[1]]$compare_means <- master_list$results[[1]]$compare_means %>% 
+    rename(kruskal_p = p) %>%
+    select(-"p.adj", -"p.signif", -"p.format")
+  master_list$results[[1]]$compare_means$p <- NA
+  for(idx in 1:nrow(master_list$results[[1]]$compare_means)){
+    master_list$results[[1]]$compare_means$p[idx] <- master_list$results[[1]]$compare_means[idx,] %>% 
+      select(-feature, -kruskal_p, -method, -p) %>% 
+      as.matrix() %>%
+      as.numeric() %>%
+      min()
+   }
+  }
+  
+cat(paste0(idx_data, ": Univariate results summary table"))
+cat(paste0("* ", "Univariate method: ", univariate_method))
+  
+print(master_list$results[[1]]$compare_means %>% arrange(p))
+}
+
+#clean environment
+rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
+
+
+master_list$results[[idx_data]]$lipid_3D_plot <- lgw_lipid_3D_plot(FUNC_data = master_list$lipid_plot$data,
+                                                                  FUNC_plot_comparisons = c("control_burn"),
+                                                                  FUNC_plot_colour_low = "white",
+                                                                  FUNC_plot_colour_high = "red")
+  
+      print(master_list$results[[idx_data]]$lipid_3D_plot)
+
+
+
+```
