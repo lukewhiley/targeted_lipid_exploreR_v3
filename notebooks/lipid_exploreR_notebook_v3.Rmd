@@ -84,7 +84,7 @@ master_list$functions$miss_value_filter <- source(paste0(github_master_dir, "/20
 master_list$functions$impute_data <- source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_impute_data.R"))
 master_list$functions$conc_calc <-  source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_conc_calculator.R"))
 master_list$functions$pca_filter <- source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_pca_filter.R"))
-master_list$functions$signal_correct <- source(paste0(github_master_dir,"/LGW_FUNC_signal_drift_correct_v0.1.R"))
+master_list$functions$signal_correct <- source(paste0(github_master_dir,"/LGW_FUNC_signal_drift_correct_v0.2.R"))
 master_list$functions$run_order_plot <- source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_pc_runorder_plot.R"))
 master_list$functions$uni_stats_boxplots <- source(paste0(github_master_dir, "/2021_LGW_FUNC_compare_means_ggplot_boxplots.R"))
 master_list$functions$lipid_plot <- source(paste0(github_master_dir, "/2022_LGW_FUNC_lipid_plot_3D.R"))
@@ -758,6 +758,8 @@ for (idx_data in names(master_list$data$pc_filter)){
     FUNC_option_method = "RF",
     FUNC_option_coCV = 30
     )
+  
+  master_list$data$corrected_individual_batch[[idx_data]] <- master_list$data$corrected_individual_batch[[idx_data]]$concentration_data
   
   # for(idx_data_2 in names(master_list$data$corrected_individual_batch[[idx_data]])){
   #   #create levels to allow control of plot order
