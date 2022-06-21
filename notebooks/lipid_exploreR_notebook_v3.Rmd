@@ -432,7 +432,7 @@ master_list$summary_tables$impute_table <- tibble()
 
 for(idx_data in names(master_list$data$sorted)){
   
- master_list$data$impute[[idx_data]] <- master_list$functions$impute_data(
+ master_list$data$impute[[idx_data]] <- master_list$functions$impute_data$value(
    FUNC_data = master_list$data$sorted[[idx_data]],
    FUNC_metabolite_list = master_list$data$sorted[[idx_data]] %>% 
      select(-contains("sample")) %>% names(),
@@ -470,7 +470,7 @@ master_list$pca_output$imputed <- list()
 #run pca loop
 for(idx_data in names(master_list$data$impute)){
   
-master_list$pca_output$imputed[[idx_data]] <- lgw_pca(
+master_list$pca_output$imputed[[idx_data]] <- master_list$functions$pca$value(
   FUNC_data = master_list$data$impute[[idx_data]],
   FUNC_metabolite_list = master_list$data$impute[[idx_data]] %>%
       select(-contains("sample")) %>% names(),
@@ -488,7 +488,7 @@ print(master_list$pca_output$imputed[[idx_data]]$plot_scores)
   }
   
 #clean environment
-#rm(list = c(ls()[which(ls() != "master_list")]))
+rm(list = c(ls()[which(ls() != "master_list")]))
 ```
 
 ## calculate target/stable isotope labelled (SIL) internal standard ratio and concentration
@@ -498,23 +498,15 @@ print(master_list$pca_output$imputed[[idx_data]]$plot_scores)
 master_list$data$concentration <- list()
 
 for(idx_data in names(master_list$data$impute)){
-  master_list$data$concentration[[idx_data]] <- lgw_lipid_conc_calc(FUNC_data = master_list$data$impute[[idx_data]],
- FUNC_metabolite_list = master_list$data$impute[[idx_data]] %>% 
-   select(!contains("sample")) %>% names(),
- FUNC_SIL_guide_path =  paste0(master_list$project_details$project_dir,"/sciex_templates/2021-09-21-LGW_lipid_mrm_transition_data.csv"),
- FUNC_conc_guide_path = paste0(master_list$project_details$project_dir, "/sciex_templates/2021-LGW_SIL_batch_103.csv"))
+  master_list$data$concentration[[idx_data]] <- master_list$functions$conc_calc$value(
+    FUNC_data = master_list$data$impute[[idx_data]],
+    FUNC_metabolite_list = master_list$data$impute[[idx_data]] %>% 
+      select(!contains("sample")) %>% names(),
+    FUNC_SIL_guide_path =  "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template.csv",
+    FUNC_conc_guide_path = "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_SIL_batch_103.csv")
 }
   
-#clean environment
-rm(list = c(ls()[which(ls() != "master_list")]))
-```
-
-
-## Checkpoint 2 for missing values
-
-```{r, checkpoint 2 - missing data and save progress after conc calc, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
-
-master_list$summary_tables$missing_data_check_2 <- list()
+#check for missing values and NaNs from the calculation
 
 temp_missing_data <- NULL
 
@@ -528,20 +520,31 @@ for(idx_data in names(master_list$data$concentration)){
   )
 } 
 
-master_list$summary_tables$missing_data_check_2 <- names(master_list$data$concentration) %>% tibble() %>% rename("batch" = ".") %>%
-  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values"))); 
+master_list$summary_tables$missing_value_filter_summary_2 <- names(master_list$data$concentration) %>% tibble() %>% rename("batch" = ".") %>%
+  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values")))
+
+print(master_list$summary_tables$missing_value_filter_summary_2)
+
+#clean environment
+rm(list = c(ls()[which(ls() != "master_list")]))
+```
 
 
-## save and load as appropriate
-save(master_list,
-     file = paste0(
-       master_list$project_details$project_dir,
-       "/data/rda_files/", Sys.Date(), "master_list_checkpoint_2.rda"))
+<!-- Checkpoint 2 for missing values -->
+
+```{r, checkpoint 2 - save progress after conc calc, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#  if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/rda_files"))){
+#   dir.create(paste0(master_list$project_details$project_dir, "/data/rda_files"))
+# }
+# 
+# ## save and load as appropriate
+# save(master_list,
+#      file = paste0(
+#        master_list$project_details$project_dir,
+#        "/data/rda_files/", Sys.Date(), "master_list_checkpoint_2.rda"))
 
 # load(file = "/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/", Sys.Date(), "2022_05_30-master_list_checkpoint_2.rda")
-
-
-print(master_list$summary_tables$missing_data_check_2)
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
@@ -557,7 +560,7 @@ master_list$pca_output$concentration <- list()
 #run pca loop
 for(idx_data in names(master_list$data$concentration)){
   
-master_list$pca_output$concentration[[idx_data]] <- lgw_pca(
+master_list$pca_output$concentration[[idx_data]] <- master_list$functions$pca$value(
   FUNC_data = master_list$data$concentration[[idx_data]],
   FUNC_metabolite_list = master_list$data$concentration[[idx_data]] %>%
       select(-contains("sample")) %>% names(),
@@ -597,7 +600,7 @@ sample_fail = NULL
 #run pca loop
 for(idx_data in names(master_list$data$concentration)){
   
-master_list$data$list_pc_filter[[idx_data]] <- lgw_pca_filter(
+master_list$data$list_pc_filter[[idx_data]] <- master_list$functions$pca_filter$value(
   FUNC_data = master_list$data$concentration[[idx_data]],
   FUNC_metabolite_list = master_list$data$concentration[[idx_data]] %>%
       select(-contains("sample")) %>% names(),
@@ -661,7 +664,7 @@ master_list$pca_output$pc_filter <- list()
 #run pca loop
 for(idx_data in names(master_list$data$pc_filter)){
   
-master_list$pca_output$pc_filter[[idx_data]] <- lgw_pca(
+master_list$pca_output$pc_filter[[idx_data]] <- master_list$functions$pca$value(
   FUNC_data = master_list$data$pc_filter[[idx_data]],
   FUNC_metabolite_list = master_list$data$pc_filter[[idx_data]] %>%
       select(-contains("sample")) %>% names(),
@@ -678,17 +681,7 @@ master_list$pca_output$pc_filter[[idx_data]] <- lgw_pca(
 print(master_list$pca_output$pc_filter[[idx_data]]$plot_scores)
   }
   
-#clean environment
-rm(list = c(ls()[which(ls() != "master_list")]))
-```
-
-
-## Checkpoint 3 for missing values
-
-```{r, checkpoint 3 - missing data and save progress, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
-
-master_list$summary_tables$missing_data_check_3 <- list()
-
+#perform missing data check
 temp_missing_data <- NULL
 
 for(idx_data in names(master_list$data$pc_filter)){
@@ -702,22 +695,31 @@ for(idx_data in names(master_list$data$pc_filter)){
 } 
 
 master_list$summary_tables$missing_data_check_3 <- names(master_list$data$pc_filter) %>% tibble() %>% rename("batch" = ".") %>%
-  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values"))); 
-
-
-## save and load as appropriate
-save(master_list,
-     file = paste0(
-       master_list$project_details$project_dir,
-       "/data/rda_files/", Sys.Date(), "-master_list_checkpoint_3.rda"))
-
-# load(file = paste0("/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/", Sys.Date(), "-master_list_checkpoint_3.rda"))
-
-
+  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values")))
 print(master_list$summary_tables$missing_data_check_3)
+
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
+```
+
+
+## Checkpoint 3 for missing values
+
+```{r, checkpoint 3 - missing data and save progress, eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+
+#  if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/rda_files"))){
+#   dir.create(paste0(master_list$project_details$project_dir, "/data/rda_files"))
+# }
+# 
+# ## save and load as appropriate
+# save(master_list,
+#      file = paste0(
+#        master_list$project_details$project_dir,
+#        "/data/rda_files/", Sys.Date(), "-master_list_checkpoint_3.rda"))
+
+# load(file = paste0("/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/", Sys.Date(), "-master_list_checkpoint_3.rda"))
+
 ```
 
 
@@ -728,16 +730,23 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 #list for storing signal drift corrected data (per project)
 master_list$data$corrected_individual_batch <- list()
 
+#create batch correction directory
+if(!dir.exists(paste0(master_list$project_details$project_dir, "/batch_correction"))){
+  dir.create(paste0(master_list$project_details$project_dir, "/batch_correction"))
+}
+
 #run loop
 for (idx_data in names(master_list$data$pc_filter)){
+  #create sub-directory
+   dir.create(paste0(master_list$project_details$project_dir, "/batch_correction/", idx_data))
  
   #####################################
   #  run batch correction PER PROJECT #
   #####################################
   
-  master_list$data$corrected_individual_batch[[idx_data]] <- lgw_signal_correction(
+  master_list$data$corrected_individual_batch[[idx_data]] <- master_list$functions$signal_correct$value(
     FUNC_project_directory = paste0(master_list$project_details$project_dir,
-                                    "/per_project_batch_correction/",
+                                    "/batch_correction/",
                                     idx_data),
     FUNC_data = master_list$data$pc_filter[[idx_data]],
     FUNC_metabolite_list = master_list$data$pc_filter[[idx_data]] %>%
@@ -760,7 +769,6 @@ for (idx_data in names(master_list$data$pc_filter)){
   #   )
 }
 
-
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 ```
@@ -768,8 +776,6 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 ## Checkpoint 4 for missing values
 
 ```{r, checkpoint 4 - after batch correction (per project), eval = FALSE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
-
-master_list$summary_tables$missing_data_check_4 <- list()
 
 for(idx_data_2 in names(master_list$data$corrected_individual_batch[[1]])){
   temp_missing_data <- NULL
