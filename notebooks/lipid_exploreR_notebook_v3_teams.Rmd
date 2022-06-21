@@ -639,6 +639,7 @@ master_list$summary_lists$list_pc_filter[[idx_data]] <- master_list$functions$pc
   FUNC_scaling = "UV",
   FUNC_title = paste0(idx_data),
   FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_option_point_size = 3,
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
   FUNC_option_plot_qc = TRUE,
@@ -646,12 +647,14 @@ master_list$summary_lists$list_pc_filter[[idx_data]] <- master_list$functions$pc
   FUNC_option_iqr_filter_qc = 5
 )
 
-master_list$summary_lists$list_pc_filter$pc_filter_plots <- list(
+master_list$summary_lists$list_pc_filter$pc_filter_plots <- append(
   master_list$summary_lists$list_pc_filter$pc_filter_plots,
-  master_list$data$list_pc_filter[[idx_data]]$PC1$plotly,
+  list(
+  paste0(idx_data, "_PC1") = master_list$data$list_pc_filter[[idx_data]]$PC1$plotly,
   master_list$data$list_pc_filter[[idx_data]]$PC2$plotly,
   master_list$data$list_pc_filter[[idx_data]]$PC3$plotly
   )
+)
 
  qc_fail <- c(qc_fail, 
                length(which(grepl("LTR", master_list$summary_lists$list_pc_filter[[idx_data]]$fail_list))))
@@ -1114,8 +1117,9 @@ master_list$pc_run_plot$pre_corrected_data$all_features <- master_list$functions
   FUNC_colour_by = "sample_type_factor_rev",
   FUNC_plot_label = "sample_name",
   FUNC_scaling = "UV",
-  FUNC_title = paste0("PC run order plot - uncorrected data"),
+  FUNC_title = paste0("PC run order plot - pre-batch correction"),
   FUNC_project_colours = c("white", "steelblue2"),
+  FUNC_option_point_size = 3,
   FUNC_option_plot_qc = TRUE
 )
 
@@ -1129,8 +1133,9 @@ master_list$pc_run_plot$post_corrected_data$all_features <- master_list$function
   FUNC_colour_by = "sample_type_factor_rev",
   FUNC_plot_label = "sample_name",
   FUNC_scaling = "UV",
-  FUNC_title = paste0("PC run order plot - batch corrected"),
+  FUNC_title = paste0("PC run order plot - post-batch correction"),
   FUNC_project_colours = c("white", "steelblue2"),
+  FUNC_option_point_size = 3,
   FUNC_option_plot_qc = TRUE
 )
 
@@ -1175,6 +1180,7 @@ master_list$pc_run_plot$post_corrected_data[[idx_lipid]] <- master_list$function
   FUNC_scaling = "UV",
   FUNC_title = paste0(idx_lipid, ": PC run order plot - batch corrected"),
   FUNC_project_colours = c("white", "steelblue2"),
+  FUNC_option_point_size = 3,
   FUNC_option_plot_qc = TRUE
 )}
 
