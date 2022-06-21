@@ -622,7 +622,7 @@ note - filter is in development and under evaluation
 #create empty list for results
 master_list$data$pc_filter <- list()
 master_list$summary_lists$list_pc_filter <- list()
-master_list$summary_lists$list_pc_filter$pc_filter_plots <- tibble::lst()
+master_list$pc_filter_plots <- tibble::lst()
 master_list$summary_tables$pc_filter_summary <- tibble() # sample summary post filtering
 
 qc_fail = NULL
@@ -631,15 +631,23 @@ sample_fail = NULL
 #run pca loop
 for(idx_data in names(master_list$data$concentration)){
   
+#step 1 - create a sample_type_factor_rev column to reverse plot plotting order so that QCs are plotted on top.
+if(length(which(names(master_list$data$concentration[[idx_data]]) == "sample_type_factor_rev")) == 0){
+master_list$data$concentration[[idx_data]] <- master_list$data$concentration[[idx_data]] %>%
+  add_column(sample_type_factor_rev =
+               factor(master_list$data$concentration[[idx_data]]$sample_type, levels = c("sample", "qc"), ordered = TRUE),
+             .after = "sample_type_factor")
+}
+  
 master_list$summary_lists$list_pc_filter[[idx_data]] <- master_list$functions$pca_filter$value(
   FUNC_data = master_list$data$concentration[[idx_data]],
   FUNC_metabolite_list = master_list$data$concentration[[idx_data]] %>%
       select(-contains("sample")) %>% names(),
-  FUNC_colour_by = "sample_type_factor",
+  FUNC_colour_by = "sample_type_factor_rev",
   FUNC_plot_label = "sample_name", 
   FUNC_scaling = "UV",
   FUNC_title = paste0(idx_data),
-  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_project_colours = c("white", "steelblue2"),
   FUNC_option_point_size = 3,
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
@@ -648,12 +656,12 @@ master_list$summary_lists$list_pc_filter[[idx_data]] <- master_list$functions$pc
   FUNC_option_iqr_filter_qc = 5
 )
 
-master_list$summary_lists$list_pc_filter$pc_filter_plots <- append(
-  master_list$summary_lists$list_pc_filter$pc_filter_plots,
+master_list$pc_filter_plots <- append(
+  master_list$pc_filter_plots,
   lst(
-  master_list$data$list_pc_filter[[idx_data]]$PC1$plotly,
-  master_list$data$list_pc_filter[[idx_data]]$PC2$plotly,
-  master_list$data$list_pc_filter[[idx_data]]$PC3$plotly
+  master_list$summary_lists$list_pc_filter[[idx_data]]$PC1$plotly,
+  master_list$summary_lists$list_pc_filter[[idx_data]]$PC2$plotly,
+  master_list$summary_lists$list_pc_filter[[idx_data]]$PC3$plotly,
   )
 )
 
@@ -689,10 +697,10 @@ master_list$summary_tables$pc_filter_summary <- master_list$summary_tables$pc_fi
 master_list$summary_tables$pc_filter_summary
 
 #print plots for report
-htmltools::tagList(master_list$summary_lists$list_pc_filter$pc_filter_plots)
+htmltools::tagList(master_list$pc_filter_plots)
 
 #clean environment
-rm(list = c(ls()[which(ls() != "master_list")]))
+#rm(list = c(ls()[which(ls() != "master_list")]))
 ```
 
 ### PCA: Post-principal component filtering
