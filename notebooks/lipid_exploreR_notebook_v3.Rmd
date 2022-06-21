@@ -1210,11 +1210,18 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 
 ```{r checkpoint 7 - save progress after full data signal drift, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
 
+if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/rda_files"))){
+  dir.create(paste0(master_list$project_details$project_dir, "/data/rda_files"))
+ }
+
 ## save and load as appropriate
 save(master_list,
      file = paste0(
        master_list$project_details$project_dir,
-       "/data/rda_files/", Sys.Date(), "_master_list_checkpoint_7.rda"))
+       "/data/rda_files/", Sys.Date(), 
+       "_", master_list$project_details$user_name, 
+       "_", master_list$project_details$project_name, 
+       "_master_list_post_processing.rda"))
 
 # load(file = paste0("/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/lipid_method_manuscript/multiplate_batch/data/rda_files/2022-06-06-master_list_checkpoint_7.rda"))
 
