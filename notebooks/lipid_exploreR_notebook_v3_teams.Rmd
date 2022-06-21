@@ -685,7 +685,7 @@ master_list$summary_tables$pc_filter_summary <- master_list$summary_tables$pc_fi
 
 #set names on summary table
 master_list$summary_tables$pc_filter_summary <- master_list$summary_tables$pc_filter_summary %>%
-  setNames(c("project", "total samples pre-filter", "total samples post-filter"))
+  setNames(c("batch", "total samples pre-filter", "total samples post-filter"))
 
 # finalise summary table of removed samples
 master_list$summary_tables$pc_filter_summary <- master_list$summary_tables$pc_filter_summary %>%
@@ -1070,7 +1070,7 @@ master_list$pca_output$final_dataset$post_corrected_data <- master_list$function
   FUNC_colour_by = "sample_type_factor",
   FUNC_plot_label = "sample_name", 
   FUNC_scaling = "UV",
-  FUNC_title = paste0("PCA of total dataset - post-batch correction "),
+  FUNC_title = paste0("PCA of total dataset - post-batch correction"),
   FUNC_project_colours = c( "steelblue2", "white"),
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
@@ -1126,7 +1126,7 @@ master_list$pc_run_plot$pre_corrected_data$all_features <- master_list$functions
   FUNC_colour_by = "sample_type_factor_rev",
   FUNC_plot_label = "sample_name",
   FUNC_scaling = "UV",
-  FUNC_title = paste0("PC run order plot - pre-batch correction"),
+  FUNC_title = paste0(""),
   FUNC_project_colours = c("white", "steelblue2"),
   FUNC_option_point_size = 3,
   FUNC_option_plot_qc = TRUE
@@ -1142,21 +1142,29 @@ master_list$pc_run_plot$post_corrected_data$all_features <- master_list$function
   FUNC_colour_by = "sample_type_factor_rev",
   FUNC_plot_label = "sample_name",
   FUNC_scaling = "UV",
-  FUNC_title = paste0("PC run order plot - post-batch correction"),
+  FUNC_title = paste0(""),
   FUNC_project_colours = c("white", "steelblue2"),
   FUNC_option_point_size = 3,
   FUNC_option_plot_qc = TRUE
 )
 
-#step 3: print plots
-cat(paste0("Pre-corrected data"))
-htmltools::tagList(master_list$pc_run_plot$pre_corrected_data$all_features)
-
-cat(paste0("Post-corrected data"))
-htmltools::tagList(master_list$pc_run_plot$post_corrected_data$all_features)
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
+```
+
+<!-- the next two chunks are to allow for plotting outputs: seperate chunks to allow for inclusion of seperator headings -->
+
+### Pre-batch correction
+
+```{r all_dataset plot - plotting chunk - pre-batch correction, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+htmltools::tagList(master_list$pc_run_plot$pre_corrected_data$all_features)
+```
+
+### Post-batch correction
+
+```{r all_dataset plot - plotting chunk - post-batch correction, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
+htmltools::tagList(master_list$pc_run_plot$post_corrected_data$all_features)
 ```
 
 
