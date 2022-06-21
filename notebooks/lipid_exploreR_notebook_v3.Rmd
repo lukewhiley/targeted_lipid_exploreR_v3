@@ -92,8 +92,6 @@ master_list$functions$run_order_plot <- source(paste0(master_list$project_detail
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 
-#rm(list = c(ls()[setdiff(which(ls() != "master_list"), which(ls() %in% c(lsf.str())))]))
-
 ```
 
 <!-- SECTION 1: READ IN SKYLINE EXPORT DATA 
