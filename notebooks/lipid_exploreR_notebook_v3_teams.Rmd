@@ -461,7 +461,7 @@ master_list$summary_tables$impute_table <-  master_list$summary_tables$impute_ta
 
 }
 
-print(master_list$summary_tables$impute_table)
+master_list$summary_tables$impute_table
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
@@ -622,6 +622,7 @@ note - filter is in development and under evaluation
 #create empty list for results
 master_list$data$pc_filter <- list()
 master_list$summary_lists$list_pc_filter <- list()
+master_list$summary_lists$list_pc_filter$pc_filter_plots <- tibble::lst()
 master_list$summary_tables$pc_filter_summary <- tibble() # sample summary post filtering
 
 qc_fail = NULL
@@ -649,8 +650,8 @@ master_list$summary_lists$list_pc_filter[[idx_data]] <- master_list$functions$pc
 
 master_list$summary_lists$list_pc_filter$pc_filter_plots <- append(
   master_list$summary_lists$list_pc_filter$pc_filter_plots,
-  list(
-  paste0(idx_data, "_PC1") = master_list$data$list_pc_filter[[idx_data]]$PC1$plotly,
+  lst(
+  master_list$data$list_pc_filter[[idx_data]]$PC1$plotly,
   master_list$data$list_pc_filter[[idx_data]]$PC2$plotly,
   master_list$data$list_pc_filter[[idx_data]]$PC3$plotly
   )
@@ -847,7 +848,7 @@ master_list$summary_tables$corrected_individual_batch <- master_list$summary_tab
   ) %>%  left_join(master_list$summary_tables$missing_data_check_4,
                    by = "batch")
 
-print(master_list$summary_tables$corrected_individual_batch)
+master_list$summary_tables$corrected_individual_batch
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
