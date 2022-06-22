@@ -322,8 +322,8 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 ```
 ### Process step: Data filtering
 #### Missing value filter: 
-Step 1: Remove all samples that have > 50% missing values (removes any mis-injections etc that may be present in the data)
-Step 2: Remove all metabolite features that have > 50% missing values (zero, NA, NaN etc)
+* Step 1: Remove all samples that have > 50% missing values (removes any mis-injections etc that may be present in the data)
+* Step 2: Remove all metabolite features that have > 50% missing values (zero, NA, NaN etc)
 
 ```{r missing value filter, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=1.25, fig.height=1}
 #create empty lists for storing outputs
