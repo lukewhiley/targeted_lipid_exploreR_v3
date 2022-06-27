@@ -60,9 +60,6 @@ master_list$project_details$project_dir <- "/Users/lukegraywhiley/Library/CloudS
 #source LGW github functions
 master_list$project_details$github_master_dir <- "https://raw.githubusercontent.com/lukewhiley/metabolomics_code/main/functions"
 
-#read in mrm_guide from github
-master_list$project_details$mrm_guide <- read_csv(
-  "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template.csv")
 ```
 
 
@@ -79,6 +76,10 @@ for(idx_package in package_list){
     paste0(idx_package, " is not installed. Please install ", idx_package, " before continuing.") %>% print()
   }
 }
+
+#read in mrm_guide from github
+master_list$project_details$mrm_guide <- read_csv(
+  "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template.csv")
 
 
 #source functions
@@ -104,6 +105,12 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 
 <!-- SECTION - extract RTs from each MRM in the mzml files -->
 ```{r RT findeR, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+test_object <- mrm_findR(FUNC_mzml_data_path = paste0(master_list$project_details$project_dir, "/data/mzml"),
+         FUNC_mrm_guide = master_list$project_details$mrm_guide %>% 
+           clean_names,
+         FUNC_OPTION_qc_type = "LTR",
+         FUNC_OPTION_max_qc_replicates = 2)
 
 
 ```
