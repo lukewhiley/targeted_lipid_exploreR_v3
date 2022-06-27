@@ -1,0 +1,131 @@
+---
+title: "ANPC SkylineR v3"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+<!-- This notebook is designed for use with the ANPC targeted lipid method. 
+Section 1: SkylineR is designed to optimise lipidomics data processing in combination with skyline.
+
+
+Section 1 - SkylineR
+
+This notebook is designed to optimise lipidomics data processing in combination with skyline.
+
+It will perform:
+- retention time optimisation by identifying peaks in LTR or QC samples
+- standardised peak boundary fitting to all samples
+
+REQUIREMENTS:
+- A subfolder containig mzML files created by proteowizard msconvert version 3.0.19. Later versions of MS convert can cause problems with msnbase in r
+
+- mzML files from LTR samples must have "LTR" in their filename
+
+Skyline export files must contain:
+- A csv template containing the target transition details. ONLY the following column headers should be present: 
+      - "Molecule List" (lipid family (e.g. CE))
+      - "Precursor Name" (lipid name (e.g. CE(14:0)))
+      - "Precursor Mz" (e.g. 614.6)
+      - "Precursor Charge" (set as 1)
+      - "Product Mz" (e.g. 369.4)
+      - "Product Charge" (set as 1)
+      - "Explicit Retention Time" (e.g. 11.66)
+      - "Explicit Retention Time Window" (leave at 0.5)
+      - "Note" in the column "Note" insert the SIL IS to be used for the target lipid. For the rows containing SIL IS themselves leave the note column blank.
+      
+      -->
+
+
+<!-- ALL USER INPUT IN THIS CHUNK -->
+
+```{r set up project structure, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+#set up project master list
+master_list <- list()
+master_list$project_details <- list()
+master_list$functions <- list()
+master_list$data <- list()
+master_list$summary_tables <- list()
+
+
+##USER INPUT##
+#set project details
+#set user
+master_list$project_details$user_name <- "LGW"
+#set project name
+master_list$project_details$project_name <- "lipid skylineR v3 test"
+#set project directory
+master_list$project_details$project_dir <- "/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/2022-STANLEY-DELIRISK/data/lipidomics_data"
+
+#source LGW github functions
+master_list$project_details$github_master_dir <- "https://raw.githubusercontent.com/lukewhiley/metabolomics_code/main/functions"
+
+#read in mrm_guide from github
+master_list$project_details$mrm_guide <- read_csv(
+  "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template.csv")
+```
+
+
+```{r set up project and load packages, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+#### load packages
+package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm')
+
+for(idx_package in package_list){
+  if(length(which(row.names(installed.packages()) == idx_package)) > 0){
+  suppressMessages(require(package = idx_package,
+                                         character.only = TRUE))
+  } else {
+    paste0(idx_package, " is not installed. Please install ", idx_package, " before continuing.") %>% print()
+  }
+}
+
+
+
+master_list$project_details
+
+
+
+# #pca script
+# master_list$functions$pca <- source(paste0(master_list$project_details$github_master_dir , "/2021_LGW_FUNC_PCA.R"))
+# master_list$functions$miss_value_filter <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_missing_value_filter.R"))
+# master_list$functions$impute_data <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_impute_data.R"))
+# master_list$functions$conc_calc <-  source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_conc_calculator.R"))
+# master_list$functions$pca_filter <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_pca_filter.R"))
+# master_list$functions$signal_correct <- source(paste0(master_list$project_details$github_master_dir ,"/LGW_FUNC_signal_drift_correct_v0.2.R"))
+# master_list$functions$run_order_plot <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_pc_runorder_plot.R"))
+#master_list$functions$uni_stats_boxplots <- source(paste0(master_list$project_details$github_master_dir , "/2021_LGW_FUNC_compare_means_ggplot_boxplots.R"))
+#master_list$functions$lipid_plot <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_plot_3D.R"))
+
+#clean environment
+rm(list = c(ls()[which(ls() != "master_list")]))
+
+```
+
+
+
+
+
+```{r, skylineR,  eval = FALSE, echo = FALSE, results = FALSE, warning=FALSE, message=FALSE}
+# reset environment
+if(length(names(sessionInfo()$otherPkgs)) > 0){
+invisible(lapply(paste0('package:',names(sessionInfo()$otherPkgs)),detach,character.only=TRUE, unload=TRUE))
+}
+
+# load packages
+package_list <- c("plyr", "tidyverse", "janitor", "gridExtra", "ggpubr", "readxl", "cowplot", "scales", "stats", "devtools", "metabom8", "shiny", "plotly", "svDialogs", "DataEditR", "htmlwidgets", "httr", "htmlTable", 'statTarget', 'knitr')
+loaded_packages <- lapply(package_list, require, character.only = TRUE)
+rm(loaded_packages, package_list)
+
+# set parent github URL
+parent_github_url <- "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v2/main"
+
+# Source R script from Github
+skylineR_script <- GET(url = paste0(parent_github_url, "/scripts/2021-LGW-lipidomics-skylineR_script_v2.r")) %>% content(as = "text")
+
+eval(parse(text = skylineR_script), envir = .GlobalEnv)
+
+
+```
+
+
