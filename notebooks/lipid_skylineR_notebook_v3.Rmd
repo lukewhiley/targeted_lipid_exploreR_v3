@@ -44,7 +44,7 @@ Skyline export files must contain:
 master_list <- list()
 master_list$project_details <- list()
 master_list$functions <- list()
-master_list$data <- list()
+master_list$mrm_data <- list()
 master_list$summary_tables <- list()
 
 
@@ -60,6 +60,9 @@ master_list$project_details$project_dir <- "/Users/lukegraywhiley/Library/CloudS
 #source LGW github functions
 master_list$project_details$github_master_dir <- "https://raw.githubusercontent.com/lukewhiley/metabolomics_code/main/functions"
 
+
+#clean environment
+rm(list = c(ls()[which(ls() != "master_list")]))
 ```
 
 
@@ -78,11 +81,12 @@ for(idx_package in package_list){
 }
 
 #read in mrm_guide from github
-master_list$project_details$mrm_guide <- read_csv(
+master_list$mrm_data$mrm_guide <- read_csv(
   "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template.csv")
 
 
 #source functions
+master_list$functions$mrm_findeR <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_MRM_findeR.R"))
 
 
 
@@ -106,11 +110,18 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 <!-- SECTION - extract RTs from each MRM in the mzml files -->
 ```{r RT findeR, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
-test_object <- mrm_findR(FUNC_mzml_data_path = paste0(master_list$project_details$project_dir, "/data/mzml"),
-         FUNC_mrm_guide = master_list$project_details$mrm_guide %>% 
+master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
+  FUNC_mzml_data_path = paste0(master_list$project_details$project_dir, "/data/mzml"),
+  FUNC_mrm_guide = master_list$mrm_data$mrm_guide %>% 
            clean_names,
-         FUNC_OPTION_qc_type = "LTR",
-         FUNC_OPTION_max_qc_replicates = 2)
+  FUNC_OPTION_qc_type = "LTR",
+  FUNC_OPTION_max_qc_replicates = 2)
 
+if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))){
+  dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))
+}
+
+write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
+          file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_rt_updated.csv"))
 
 ```
