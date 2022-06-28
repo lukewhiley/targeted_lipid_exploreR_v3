@@ -84,7 +84,7 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 ```{r set up project and load packages, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 #### load packages
-package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm')
+package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm', 'q3ML')
 
 for(idx_package in package_list){
   if(length(which(row.names(installed.packages()) == idx_package)) > 0){
@@ -101,7 +101,7 @@ master_list$mrm_data$mrm_guide <- read_csv(
 
 
 #source functions
-master_list$functions$mrm_findeR <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_MRM_findeR.R"))
+master_list$functions$mrm_findeR_pwiz3019 <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_MRM_findeR_pwiz3019.R"))
 
 
 
@@ -123,29 +123,40 @@ master_list$functions$mrm_findeR <- source(paste0(master_list$project_details$gi
 
 
 <!-- SECTION - extract RTs from each MRM in the mzml files -->
-```{r RT findeR, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+```{r mrm_findeR_pwiz3019, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+#master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
+# master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR_pwiz3019$value(
+#   FUNC_mzml_data_path = paste0(master_list$project_details$project_dir, "/data/mzml_old"),
+#   FUNC_mrm_guide = master_list$mrm_data$mrm_guide %>% 
+#            clean_names,
+#   FUNC_OPTION_qc_type = "LTR",
+#   FUNC_OPTION_max_qc_replicates = 2)
+# 
+# if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))){
+#   dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))
+# }
+# 
+# write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
+#           file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_rt_updated.csv"))
+
+```
+
+```{r mrm_findeR_pwiz3020, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 #master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
 master_list$mrm_data$mrm_guide_rt_update <- mrm_findR(
-  FUNC_mzml_data_path = paste0(master_list$project_details$project_dir, "/data/mzml_old"),
+  FUNC_mzml_data_path = paste0(master_list$project_details$project_dir, "/data/mzml_pwiz3019"),
   FUNC_mrm_guide = master_list$mrm_data$mrm_guide %>% 
            clean_names,
   FUNC_OPTION_qc_type = "LTR",
-  FUNC_OPTION_max_qc_replicates = 2)
+  FUNC_OPTION_max_qc_replicates = 8)
+# 
+# if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))){
+#   dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))
+# }
+# 
+# write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
+#           file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_rt_updated.csv"))
 
-if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))){
-  dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))
-}
-
-write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
-          file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_rt_updated.csv"))
-
-
-
-#reload packages
-#### load packages
-package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm')
-
-for(idx_package in package_list){suppressMessages(require(package = idx_package, character.only = TRUE))}
-rm(list = c(ls()[which(ls() != "master_list")]))
 ```
