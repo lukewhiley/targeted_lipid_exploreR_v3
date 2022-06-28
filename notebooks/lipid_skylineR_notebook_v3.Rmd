@@ -47,7 +47,6 @@ master_list$functions <- list()
 master_list$mrm_data <- list()
 master_list$summary_tables <- list()
 
-
 ##USER INPUT##
 #set project details
 #set user
@@ -60,6 +59,22 @@ master_list$project_details$project_dir <- "/Users/lukegraywhiley/Library/CloudS
 #source LGW github functions
 master_list$project_details$github_master_dir <- "https://raw.githubusercontent.com/lukewhiley/metabolomics_code/main/functions"
 
+#due to a package conflict with MSnBase detach packages before starting
+detachAllPackages <- function() {
+  basic.packages.blank <- c(    
+    "stats", "graphics", "grDevices", "utils", "datasets", "methods", "base"    
+  )    
+  basic.packages <- paste("package:", basic.packages.blank, sep = "")   
+  package.list <- search()[ifelse(unlist(gregexpr("package:", search())) == 1, TRUE, FALSE)]   
+  package.list <- setdiff(package.list, basic.packages)   
+  if (length(package.list) > 0) {   
+    for (package in package.list) {   
+      detach(package, character.only = TRUE)   
+    }   
+  }    
+}
+
+detachAllPackages()
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
@@ -102,7 +117,7 @@ master_list$functions$mrm_findeR <- source(paste0(master_list$project_details$gi
 #master_list$functions$lipid_plot <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_plot_3D.R"))
 
 #clean environment
-rm(list = c(ls()[which(ls() != "master_list")]))
+#rm(list = c(ls()[which(ls() != "master_list")]))
 
 ```
 
@@ -110,8 +125,9 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 <!-- SECTION - extract RTs from each MRM in the mzml files -->
 ```{r RT findeR, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
-master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
-  FUNC_mzml_data_path = paste0(master_list$project_details$project_dir, "/data/mzml"),
+#master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
+master_list$mrm_data$mrm_guide_rt_update <- mrm_findR(
+  FUNC_mzml_data_path = paste0(master_list$project_details$project_dir, "/data/mzml_old"),
   FUNC_mrm_guide = master_list$mrm_data$mrm_guide %>% 
            clean_names,
   FUNC_OPTION_qc_type = "LTR",
@@ -124,4 +140,12 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_up
 write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
           file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_rt_updated.csv"))
 
+
+
+#reload packages
+#### load packages
+package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm')
+
+for(idx_package in package_list){suppressMessages(require(package = idx_package, character.only = TRUE))}
+rm(list = c(ls()[which(ls() != "master_list")]))
 ```
