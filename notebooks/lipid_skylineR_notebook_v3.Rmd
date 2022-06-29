@@ -74,7 +74,7 @@ master_list$project_details$github_master_dir <- "https://raw.githubusercontent.
 master_list$mrm_data$mrm_guide <- read_csv(
   paste0(master_list$project_details$github_master_dir,
          "/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template.csv"),
-  show_col_types = FALSE) %>% clean_names()
+  show_col_types = FALSE) 
 
 #source functions
 #RT finder
@@ -109,21 +109,24 @@ for(idx_mzML in mzml_filelist){
 #master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
 master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_RT_findeR_mzR$value(
   FUNC_mzR = master_list$mzR, #list for each sample containing $mzR_object; $mzR_header; $mzR_chromatogram
-  FUNC_mrm_guide = master_list$mrm_data$mrm_guide,
+  FUNC_mrm_guide = master_list$mrm_data$mrm_guide %>% clean_names(),
   FUNC_OPTION_qc_type = "LTR",
   FUNC_OPTION_max_qc_replicates = 8)
+#set names so that skyline recognises columns
+master_list$mrm_data$mrm_guide_rt_update <- setNames(master_list$mrm_data$mrm_guide_rt_update,
+                                                     names(master_list$mrm_data$mrm_guide))
 
 #create directory for exporting skyline templates
-if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))){
-  dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))
+if(!dir.exists(paste0(master_list$project_details$project_dir, "/skyline_updates"))){
+  dir.create(paste0(master_list$project_details$project_dir, "/skyline_updates"))
 }
 #export updated optimised RT times
 write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
-          file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_rt_updated.csv"))
+          file = paste0(master_list$project_details$project_dir, "/skyline_updates/mrm_rt_updated.csv"))
 
 #create directory for storing skyline exports
-if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_reports"))){
-  dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_reports"))
+if(!dir.exists(paste0(master_list$project_details$project_dir, "/skyline_reports"))){
+  dir.create(paste0(master_list$project_details$project_dir, "/skyline_reports"))
 }
 
 #interact with skyline
@@ -131,7 +134,7 @@ dlg_message("1. Please open skylineMS software", type = 'ok');dlg_message("2. Cr
 
 #re_import skyline file
 master_list$skyline_reports$report_1 <- read_csv(file = list.files(
-  paste0(master_list$project_details$project_dir, "/data/skyline_reports"),
+  paste0(master_list$project_details$project_dir, "/skyline_reports"),
   pattern = "xSkylineR.csv"))
 
 #perform peak boundary update
@@ -142,7 +145,7 @@ master_list$mrm_data$mrm_guide_pb_update <- master_list$functions$mrm_pb_findeR$
 
 #write peak boundary output
 write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
-          file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_peak_boundary_updated.csv"))
+          file = paste0(master_list$project_details$project_dir, "/skyline_updates/mrm_peak_boundary_updated.csv"))
 
 dlg_message("1. Please return to skylineMS software", type = 'ok'); dlg_message("2. Import the new skylineR_boundary_update.csv transition list from csv file by navigating to File -> import -> peak boundaries", type = 'ok'); dlg_message("4. Save project", type = 'ok');dlg_message("5. Export results to [/skyline_reports] folder.  Export reports must have the following headings: Replicate, Protein, Peptide, Area, Retention Time, Start Time and End Time", type = 'ok'); dlg_message("7. Now return to R Studio and run the lipid_exploreR to QC check data", type = 'ok')
 
