@@ -59,22 +59,6 @@ master_list$project_details$project_dir <- "/Users/lukegraywhiley/Library/CloudS
 #source LGW github functions
 master_list$project_details$github_master_dir <- "https://raw.githubusercontent.com/lukewhiley/metabolomics_code/main/functions"
 
-#due to a package conflict with MSnBase detach packages before starting
-detachAllPackages <- function() {
-  basic.packages.blank <- c(    
-    "stats", "graphics", "grDevices", "utils", "datasets", "methods", "base"    
-  )    
-  basic.packages <- paste("package:", basic.packages.blank, sep = "")   
-  package.list <- search()[ifelse(unlist(gregexpr("package:", search())) == 1, TRUE, FALSE)]   
-  package.list <- setdiff(package.list, basic.packages)   
-  if (length(package.list) > 0) {   
-    for (package in package.list) {   
-      detach(package, character.only = TRUE)   
-    }   
-  }    
-}
-
-detachAllPackages()
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
@@ -84,7 +68,7 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 ```{r set up project and load packages, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 #### load packages
-package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm', 'q3ML')
+package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm', 'q3ML', 'xcms', 'sRm', 'MSCoreUtils')
 
 for(idx_package in package_list){
   if(length(which(row.names(installed.packages()) == idx_package)) > 0){
@@ -101,62 +85,134 @@ master_list$mrm_data$mrm_guide <- read_csv(
 
 
 #source functions
-master_list$functions$mrm_findeR_pwiz3019 <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_MRM_findeR_pwiz3019.R"))
-
-
-
-# #pca script
-# master_list$functions$pca <- source(paste0(master_list$project_details$github_master_dir , "/2021_LGW_FUNC_PCA.R"))
-# master_list$functions$miss_value_filter <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_missing_value_filter.R"))
-# master_list$functions$impute_data <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_impute_data.R"))
-# master_list$functions$conc_calc <-  source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_conc_calculator.R"))
-# master_list$functions$pca_filter <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_pca_filter.R"))
-# master_list$functions$signal_correct <- source(paste0(master_list$project_details$github_master_dir ,"/LGW_FUNC_signal_drift_correct_v0.2.R"))
-# master_list$functions$run_order_plot <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_pc_runorder_plot.R"))
-#master_list$functions$uni_stats_boxplots <- source(paste0(master_list$project_details$github_master_dir , "/2021_LGW_FUNC_compare_means_ggplot_boxplots.R"))
-#master_list$functions$lipid_plot <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_lipid_plot_3D.R"))
+master_list$functions$mrm_findeR_pwiz3019 <- source(paste0(master_list$project_details$github_master_dir , "/2022_LGW_FUNC_MRM_findeR_pwiz3019_mzR.R"))
 
 #clean environment
-#rm(list = c(ls()[which(ls() != "master_list")]))
+rm(list = c(ls()[which(ls() != "master_list")]))
 
 ```
 
 
-<!-- SECTION - extract RTs from each MRM in the mzml files -->
 ```{r mrm_findeR_pwiz3019, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 #master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
-# master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR_pwiz3019$value(
-#   FUNC_mzml_data_path = paste0(master_list$project_details$project_dir, "/data/mzml_old"),
-#   FUNC_mrm_guide = master_list$mrm_data$mrm_guide %>% 
-#            clean_names,
-#   FUNC_OPTION_qc_type = "LTR",
-#   FUNC_OPTION_max_qc_replicates = 2)
-# 
-# if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))){
-#   dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))
-# }
-# 
-# write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
-#           file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_rt_updated.csv"))
-
-```
-
-```{r mrm_findeR_pwiz3020, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
-
-#master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
-master_list$mrm_data$mrm_guide_rt_update <- mrm_findR(
+master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR_pwiz3019$value(
   FUNC_mzml_data_path = paste0(master_list$project_details$project_dir, "/data/mzml_pwiz3019"),
   FUNC_mrm_guide = master_list$mrm_data$mrm_guide %>% 
            clean_names,
   FUNC_OPTION_qc_type = "LTR",
   FUNC_OPTION_max_qc_replicates = 8)
 # 
-# if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))){
-#   dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))
-# }
-# 
-# write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
-#           file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_rt_updated.csv"))
+if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))){
+  dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))
+}
+
+write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
+          file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_rt_updated.csv"))
 
 ```
+
+```{r peak boundary, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+
+#master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
+master_list$mrm_data$mrm_guide_pb_update <- peak_boundary_findR(
+  FUNC_data = paste0(master_list$project_details$project_dir, "/data/skyline_exports/2022-06-27_delirisk_xSkylineR.csv"),
+  FUNC_OPTION_qc_type = "LTR"
+)
+# 
+if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))){
+  dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))
+}
+
+write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
+          file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_peak_boundary_updated.csv"))
+
+```
+
+<!-- peak picking in r
+
+Process: load data into r
+
+-->
+
+
+```{r load data into r, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+# create a list of mzML files 
+#chrom_files <- list.files(paste0(master_list$project_details$project_dir, "/data/mzml_pwiz3019"), full.names = TRUE)[1:5]
+
+chrom_files <- list.files("/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/2022-GRAY-LIPID_METHOD/data/lipidomics_data/mzML_no_compress",  full.names = TRUE)
+
+srmExp_sciex <- sRm::openSRM(chrom_files, source_type = 'raw', backend = 'mzR')
+
+```
+
+
+<!-- peak picking in r
+
+Process: plot data
+
+-->
+
+```{r plot data, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+plotSRM(srmExp_sciex, index = 312, type = 'overlay')
+
+plotSRM(srmExp_sciex, index = 312, type = 'facet')
+
+plotParent(srmExp_sciex, 875.6)
+```
+
+
+<!-- peak picking in r
+Process: pick peaks
+-->
+
+```{r pick peaks, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+#pick peaks
+srmExpPeaks_sciex <-
+  detectPeaks(srmExp_sciex,
+              snthresh = 1,
+              peakwidth = c(2,15), 
+              parallel = TRUE)
+
+#plot peak area
+plotPeakArea(srmExpPeaks_sciex, index = 312, sampleName = "covvac_C1_PLA_MS-LIPIDS_PLIP01_VAXp01_120921-LTR-PLA_27")
+
+```
+
+<!-- peak picking in r
+Process: group peaks
+-->
+
+```{r group peaks, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+#pick peaks
+srmExpGroups_sciex <- groupPeaks(srmExpPeaks_sciex, rt_tolerance = 0.2)
+
+group_table_sciex <- groupSummary(srmExpGroups_sciex); head(group_table_sciex)
+
+number_of_samples <- nrow(srmExp_sciex@meta)
+
+# Only keep groups with have Rt width of 3.0 minutes or less and total group occupancy is less than or equal to the total number of samples. 
+
+group_table_filtered <-
+  group_table_sciex %>% dplyr::filter(Rt >= 1.0 & Rt <= 16.0) %>%
+  dplyr::filter(Rtwidth <= 3) %>% dplyr::filter(count <= number_of_samples)
+
+plotGroup(srmExpGroups_sciex, group = 'G0314')
+
+srmExpGroupTarg_sciex <- createGroup(srmExpPeaks_sciex, index = 312, rt = 10.9,  width = 10, id = 'Group01')
+
+srmExpGroupTarg_sciex@groups
+
+patchwork::wrap_plots(
+  plotSRM(srmExpGroupTarg_sciex, index = 1),
+  plotGroup(srmExpGroupTarg_sciex, group = 'Group01'),
+  ncol = 1
+)
+
+```
+
+
+
