@@ -136,9 +136,9 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/skyline_reports
 dlg_message("1. Please open skylineMS software", type = 'ok');dlg_message("2. Create new small molecule file", type = 'ok'); dlg_message("3. Import the [skylineR_RT_update.csv] transition list located in [/skyline_updates] folder. In Skyline navigate to File -> import -> transition list", type = 'ok'); dlg_message("4. Save project", type = 'ok'); dlg_message("5. Import mzml data files for processing by navigating to File -> import -> results", type = 'ok'); dlg_message("6. Let skyline process.  Export results to [/skyline_reports] folder.  Export reports must have the following headings: Replicate, Protein, Peptide, Area, Retention Time, Start Time and End Time", type = 'ok'); dlg_message("7. Now return to R Studio", type = 'ok'); dlg_message("Next select the export file for importing into skylineR", type = 'ok')
 
 #re_import skyline file
-master_list$skyline_reports$report_1 <- read_csv(file = list.files(
+master_list$skyline_reports$report_1 <- read_csv(file = paste0(list.files(
   paste0(master_list$project_details$project_dir, "/skyline_reports"),
-  pattern = "xSkylineR.csv"))
+  pattern = "xSkylineR", full.names = TRUE)), show_col_types = FALSE)
 
 #perform peak boundary update
 master_list$mrm_data$mrm_guide_pb_update <- master_list$functions$mrm_pb_findeR$value(
