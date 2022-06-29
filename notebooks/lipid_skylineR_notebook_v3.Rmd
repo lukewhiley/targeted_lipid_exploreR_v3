@@ -85,8 +85,8 @@ master_list$functions$mrm_RT_findeR_mzR <- source(paste0(
 master_list$functions$mrm_pb_findeR <- source(paste0(
   master_list$project_details$github_master_dir, "/metabolomics_code/main/functions/2022_LGW_FUNC_peak_boundary_findeR.R"))
 
-dlg_message(paste0("put project mzML files in: ", 
-                   paste0(master_list$project_details$project_dir, "/data/mzml")), type = 'ok')
+dlg_message("convert SCIEX files to mzML", type = 'ok'); dlg_message(paste0("mzML directory: [", 
+                   paste0(master_list$project_details$project_dir, "/data/mzml"), "]"), type = 'ok')
 
 #import mzML
 mzml_filelist <- list.files(paste0(master_list$project_details$project_dir, 
