@@ -164,4 +164,11 @@ write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
 
 dlg_message("1. Please return to skylineMS software", type = 'ok'); dlg_message("2. Import the new skylineR_boundary_update.csv transition list from csv file by navigating to File -> import -> peak boundaries", type = 'ok'); dlg_message("4. Save project", type = 'ok');dlg_message("5. Export results to [/skyline_reports] folder.  Export reports must have the following headings: Replicate, Protein, Peptide, Area, Retention Time, Start Time and End Time", type = 'ok'); dlg_message("7. Now return to R Studio and run the lipid_exploreR to QC check data", type = 'ok')
 
+#create directory for exporting rda files
+if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/rda"))){
+  dir.create(paste0(master_list$project_details$project_dir, "/data/rda"))
+}
+
+save(master_list, file = paste0(master_list$project_details$project_dir,"/data/rda/", Sys.Date(), "_skylineR.rda"))
+
 ```
