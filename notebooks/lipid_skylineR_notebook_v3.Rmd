@@ -39,35 +39,7 @@ Skyline export files must contain:
 
 <!-- ALL USER INPUT IN THIS CHUNK -->
 
-```{r set up project structure, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
-#set up project master list
-master_list <- list()
-master_list$project_details <- list()
-master_list$functions <- list()
-master_list$mzR <- list()
-master_list$mrm_guides <- list()
-master_list$skyline_reports <- list()
-master_list$summary_tables <- list()
-
-##USER INPUT##
-#set project details
-#set user
-master_list$project_details$user_name <- "LGW"
-#set project name
-master_list$project_details$project_name <- "lipid skylineR v3 test"
-#set project directory
-master_list$project_details$project_dir <- "/Users/lukegraywhiley/Library/CloudStorage/OneDrive-MurdochUniversity/projects/2022-GRAY-LIPID_METHOD/data/lipidomics_data/multiplate_batch/plasma/cambridge_followup_2"
-
-#source LGW github functions
-master_list$project_details$github_master_dir <- "https://raw.githubusercontent.com/lukewhiley"
-
-#clean environment
-rm(list = c(ls()[which(ls() != "master_list")]))
-```
-
-
-```{r set up project and load packages, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
-
+```{r set up project structure and load packages, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 #### load packages
 package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm', 'q3ML', 'xcms', 'sRm', 'MsCoreUtils', 'svDialogs')
 
@@ -76,16 +48,33 @@ for(idx_package in package_list){
   suppressMessages(require(package = idx_package,
                                          character.only = TRUE))
   } else {
-    paste0(idx_package, " is not installed. Please install ", idx_package, " before continuing.") %>% print()
+    dlg_message(
+    paste0(idx_package, " is not installed. Please install ", idx_package, " before continuing.")
+    )
   }
 }
+
+dlg_message("Welcome to skylineR! :-)", type = 'ok')
+
+#set up project master list
+master_list <- list(); master_list$project_details <- list(); master_list$functions <- list(); master_list$mzR <- list(); master_list$mrm_guides <- list(); master_list$skyline_reports <- list(); master_list$summary_tables <- list()
+
+##USER INPUT##
+#set project details
+dlg_message("select project directory", type = 'ok');master_list$project_details$project_dir <- rstudioapi::selectDirectory()
+#set user
+master_list$project_details$user_name <- dlgInput("user", "example_initials")$res
+#set project name
+master_list$project_details$project_name <- dlgInput("project", "project_name")$res
+
+#github master directory
+master_list$project_details$github_master_dir <- "https://raw.githubusercontent.com/lukewhiley"
 
 #read in mrm_guide from github
 master_list$mrm_data$mrm_guide <- read_csv(
   paste0(master_list$project_details$github_master_dir,
          "/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template.csv"),
   show_col_types = FALSE) %>% clean_names()
-
 
 #source functions
 #RT finder
@@ -96,17 +85,15 @@ master_list$functions$mrm_RT_findeR_mzR <- source(paste0(
 master_list$functions$mrm_pb_findeR <- source(paste0(
   master_list$project_details$github_master_dir, "/metabolomics_code/main/functions/2022_LGW_FUNC_peak_boundary_findeR.R"))
 
-#clean environment
-rm(list = c(ls()[which(ls() != "master_list")]))
-
-```
-
-```{r read in mzml files, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+#import mzML
 mzml_filelist <- list.files(paste0(master_list$project_details$project_dir, 
                                    "/data/mzml"),
                             pattern = ".mzML",
                             full.names = FALSE)
 
+dlg_message(paste0("there are ", length(mzml_filelist), " mzML files"), type = 'ok')
+
+#read in mzML files using mzR
 for(idx_mzML in mzml_filelist){
   master_list$mzR[[idx_mzML]] <- list()
   master_list$mzR[[idx_mzML]]$mzR_object <- mzR::openMSfile(
@@ -118,9 +105,7 @@ for(idx_mzML in mzml_filelist){
   master_list$mzR[[idx_mzML]]$mzR_timestamp <- master_list$mzR[[idx_mzML]]$mzR_object@backend$getRunStartTimeStamp()
 }
 
-
 # Retention time optimiser
-
 #master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
 master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_RT_findeR_mzR$value(
   FUNC_mzR = master_list$mzR, #list for each sample containing $mzR_object; $mzR_header; $mzR_chromatogram
@@ -132,11 +117,9 @@ master_list$mrm_data$mrm_guide_rt_update <- master_list$functions$mrm_RT_findeR_
 if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))){
   dir.create(paste0(master_list$project_details$project_dir, "/data/skyline_updates"))
 }
-
 #export updated optimised RT times
 write_csv(x = master_list$mrm_data$mrm_guide_rt_update,
           file = paste0(master_list$project_details$project_dir, "/data/skyline_updates/mrm_rt_updated.csv"))
-
 
 #create directory for storing skyline exports
 if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_reports"))){
@@ -145,7 +128,6 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline_re
 
 #interact with skyline
 dlg_message("1. Please open skylineMS software", type = 'ok');dlg_message("2. Create new small molecule file", type = 'ok'); dlg_message("3. Import the [skylineR_RT_update.csv] transition list located in [/skyline_updates] folder. In Skyline navigate to File -> import -> transition list", type = 'ok'); dlg_message("4. Save project", type = 'ok'); dlg_message("5. Import mzml data files for processing by navigating to File -> import -> results", type = 'ok'); dlg_message("6. Let skyline process.  Export results to [/skyline_reports] folder.  Export reports must have the following headings: Replicate, Protein, Peptide, Area, Retention Time, Start Time and End Time", type = 'ok'); dlg_message("7. Now return to R Studio", type = 'ok'); dlg_message("Next select the export file for importing into skylineR", type = 'ok')
-
 
 #re_import skyline file
 master_list$skyline_reports$report_1 <- read_csv(file = list.files(
