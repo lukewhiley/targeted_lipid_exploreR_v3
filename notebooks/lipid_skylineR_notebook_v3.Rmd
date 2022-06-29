@@ -41,7 +41,7 @@ Skyline export files must contain:
 
 ```{r set up project structure and load packages, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 #### load packages
-package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm', 'q3ML', 'xcms', 'sRm', 'MsCoreUtils', 'svDialogs')
+package_list <- c('plyr', 'tidyverse', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm')
 
 for(idx_package in package_list){
   if(length(which(row.names(installed.packages()) == idx_package)) > 0){
