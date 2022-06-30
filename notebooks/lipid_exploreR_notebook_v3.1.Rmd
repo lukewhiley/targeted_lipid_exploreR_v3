@@ -717,13 +717,13 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/html_reports"))
   dir.create(paste0(master_list$project_details$project_dir, "/html_reports"))
 }
 
-# fileConn<-file(paste0(master_list$project_details$project_dir, "/html_reports/report_template.r"))
-# writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/targeted_lipid_exploreR_v2/main/scripts/2021-LGW-lipidomics-report_generatoR_script_v2.r")) %>%
-#                  httr::content(as = "text"), fileConn)
-# close(fileConn)
+fileConn<-file(paste0(master_list$project_details$project_dir, "/html_reports/lipid_exploreR_report_template.r"))
+writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/targeted_lipid_exploreR_v2/main/scripts/lipid_exploreR_report_template.r")) %>%
+                 httr::content(as = "text"), fileConn)
+close(fileConn)
 
 
-rmarkdown::render(input = paste0(master_list$project_details$project_dir, "/html_reports/report_template_edited.r"),
+rmarkdown::render(input = paste0(master_list$project_details$project_dir, "/html_reports/lipid_exploreR_report_template.r"),
                   output_format = "html_document",
                   output_dir = paste0(master_list$project_details$project_dir, "/html_reports"),
                   output_file = paste0(Sys.Date(), "_", master_list$project_details$user_name, "_", master_list$project_details$project_name, "_lipid_exploreR_QC_report.html")
