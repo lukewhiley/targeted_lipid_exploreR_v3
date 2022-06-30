@@ -57,7 +57,7 @@ for(idx_package in package_list){
 dlg_message("Welcome to skylineR! :-)", type = 'ok')
 
 #set up project master list
-master_list <- list(); master_list$project_details <- list(); master_list$functions <- list();  master_list$mrm_guides <- list(); ; master_list$data <- list(), master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list()
+master_list <- list(); master_list$project_details <- list(); master_list$functions <- list();  master_list$mrm_guides <- list(); master_list$data <- list(); master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list()
 
 ##USER INPUT##
 #set project details
@@ -85,28 +85,46 @@ master_list$functions$mrm_RT_findeR_mzR <- source(paste0(
 master_list$functions$mrm_pb_findeR <- source(paste0(
   master_list$project_details$github_master_dir, "/metabolomics_code/main/functions/2022_LGW_FUNC_peak_boundary_findeR.R"))
 
-dlg_message("convert SCIEX files to mzML", type = 'ok'); dlg_message(paste0("mzML directory: [", 
-                   paste0(master_list$project_details$project_dir, "/data/mzml"), "]"), type = 'ok')
+dlg_message("convert SCIEX files to mzML", type = 'ok'); dlg_message(paste0("mzML directory: [", paste0(master_list$project_details$project_dir, "/data/mzml"), "]"), type = 'ok'); dlg_message("put mzML files in sub folders per plate [/data/mzml/plate_1; /data/mzml/plate_2] etc")
+
+mzml_plate_list <- list.dirs(paste0(master_list$project_details$project_dir, 
+                                   "/data/mzml"),
+                             full.names = FALSE)
+
+dlg_message(paste0("there are ", length(mzml_plate_list), " plates of samples"), type = 'ok')
 
 #import mzML
-mzml_filelist <- list.files(paste0(master_list$project_details$project_dir, 
-                                   "/data/mzml"),
-                            pattern = ".mzML",
-                            full.names = FALSE)
+mzml_filelist <- list()
+plate_list <- NULL
+for(idx_plate in mzml_plate_list){
+mzml_filelist[[idx_plate]] <- list.files(paste0(master_list$project_details$project_dir, 
+                                    "/data/mzml/",
+                                    idx_plate),
+                                    pattern = ".mzML",
+                                    full.names = FALSE)
 
-dlg_message(paste0("there are ", length(mzml_filelist), " mzML files"), type = 'ok')
+plate_list <- c(plate_list, paste0(idx_plate," = ", length(mzml_filelist[[idx_plate]]), " samples; "))
+}
 
+dlg_message(plate_list, type = 'ok')
+
+for(idx_plate in mzml_plate_list){
+  master_list$data$mzR[[idx_plate]] <- list()
 #read in mzML files using mzR
-for(idx_mzML in mzml_filelist){
-  master_list$data$mzR[[idx_mzML]] <- list()
-  master_list$data$mzR[[idx_mzML]]$mzR_object <- mzR::openMSfile(
+for(idx_mzML in mzml_filelist[[idx_plate]]){
+  master_list$data$mzR[[idx_plate]][[idx_mzML]] <- list()
+  master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object <- mzR::openMSfile(
     filename = paste0(master_list$project_details$project_dir, 
                       "/data/mzml/",
                       idx_mzML))
-  master_list$data$mzR[[idx_mzML]]$mzR_header <- mzR::chromatogramHeader(master_list$data$mzR[[idx_mzML]]$mzR_object)
-  master_list$data$mzR[[idx_mzML]]$mzR_chromatogram <- mzR::chromatograms(master_list$data$mzR[[idx_mzML]]$mzR_object)
-  master_list$data$mzR[[idx_mzML]]$mzR_timestamp <- master_list$data$mzR[[idx_mzML]]$mzR_object@backend$getRunStartTimeStamp()
+  master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_header <- mzR::chromatogramHeader(master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object)
+  master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram <- mzR::chromatograms(master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object)
+  master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_timestamp <- master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object@backend$getRunStartTimeStamp()
 }
+}
+
+
+#######
 
 # Retention time optimiser
 #master_list$mrm_guides$mrm_guide_rt_update <- master_list$functions$mrm_findeR$value(
