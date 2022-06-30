@@ -1,5 +1,5 @@
 ---
-title: "ANPC SkylineR v3"
+title: "ANPC SkylineR v3.1"
 output:
   pdf_document: default
   html_document:
