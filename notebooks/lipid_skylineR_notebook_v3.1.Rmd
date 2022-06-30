@@ -11,18 +11,18 @@ Section 1: SkylineR is designed to optimise lipidomics data processing in combin
 
 Section 1 - SkylineR
 
-This notebook is designed to optimise lipidomics data processing in combination with skyline.
+This notebook is designed to optimise lipidomics data processing in combination with skylineMS.
 
 It will perform:
 - retention time optimisation by identifying peaks in LTR or QC samples
 - standardised peak boundary fitting to all samples
 
 REQUIREMENTS:
-- A subfolder containig mzML files created by proteowizard msconvert version 3.0.19. Later versions of MS convert can cause problems with msnbase in r
+- A subfolder containig mzML files created by proteowizard msconvert version 3.0.19. Later versions of MS convert can cause problems with mzR package in r
 
-- mzML files from LTR samples must have "LTR" in their filename
+- mzML files from LTR samples must have "LTR" in their filename with matched case
 
-Skyline export files must contain:
+The mrm guide file must contain:
 - A csv template containing the target transition details. ONLY the following column headers should be present: 
       - "Molecule List" (lipid family (e.g. CE))
       - "Precursor Name" (lipid name (e.g. CE(14:0)))
@@ -36,8 +36,6 @@ Skyline export files must contain:
       
       -->
 
-
-<!-- ALL USER INPUT IN THIS CHUNK -->
 
 ```{r set up project structure and load packages, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 #### load packages
