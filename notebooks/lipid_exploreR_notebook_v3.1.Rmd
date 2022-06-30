@@ -9,36 +9,11 @@ output:
 
 IMPORTANT INFORMATION PRIOR TO USING..... 
 
-The project folder structure should be as follows:
+RUN skylineR BEFORE this qc script.
 
--> ~parent_directory/
-  -> data/
-    -> skyline_reports  #subfolder containing single csv per project/batch exported from skyline (skyline file export details below)
-  ->run_orders          #subfolder containing single csv per project/batch with the runorder (file details below)
-
-Skyline csv export files should contain the headers:
--> Replicate
--> Protein
--> Peptide
--> Precursor Mz
--> Product Mz
--> Retention Time
--> Start Time
--> End Time
--> Area
--> Height
-
-run_order csv filename should match the skyline filename and should contain the following headers:
--> sample_idx           #numeric index reflecting run order, (e.g. 1)
--> sample_name          #character string reflecting sample filename (e.g. covvac_C1_PLA_MS-LIPIDS_PLIP01_VAXp01_120921-VAX00001_DUMMY1_10)
--> sample_batch         #character string reflecting the project/batch (e.g. covvac)
--> sample_plate_id      #numeric index representing the sample plate number (e.g. 1)
--> sample_plate_order   #numeric index of the sample order on the plate (e.g. 1-96)
--> sample_type          #character string representing the sample type (e.g. sample, qc or conditioning)
+The type of QC used MUST be tagged in the filename with matched case (LTR not ltr)
 
 -->
-
-<!-- ALL USER INPUT IN THIS CHUNK -->
 
 ```{r set up project structure, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
