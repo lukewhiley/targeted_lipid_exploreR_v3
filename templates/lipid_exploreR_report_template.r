@@ -109,9 +109,10 @@ knitr::kable(master_list$summary_tables$pc_filter_summary)
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-#' 
 master_list$pc_filter_plots$PC1
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 master_list$pc_filter_plots$PC2
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 master_list$pc_filter_plots$PC3
 #'
 #' ***
