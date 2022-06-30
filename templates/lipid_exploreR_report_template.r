@@ -104,6 +104,15 @@ subplot(master_list$pca_output$concentration$sample_qc$plot_scores, master_list$
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 knitr::kable(master_list$summary_tables$pc_filter_summary)
 #'
+#' ***
+#' #### PCA filter plot: Run order vs PCx score
+#' 
+#' 
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+#' 
+master_list$pc_filter_plots$PC1
+master_list$pc_filter_plots$PC2
+master_list$pc_filter_plots$PC3
 #'
 #' ***
 #' 
@@ -113,6 +122,7 @@ knitr::kable(master_list$summary_tables$pc_filter_summary)
 #' * imputation of remaining missing values
 #' * calculation of response ratios (target analyte peak area/internal standard peak area) 
 #' * principal component filtration
+#' 
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5

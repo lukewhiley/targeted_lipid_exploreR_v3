@@ -480,9 +480,9 @@ master_list$summary_lists$list_pc_filter <- master_list$functions$pca_filter$val
   FUNC_option_iqr_filter_qc = 5
 )
 
-master_list$pc_filter_plots <- lst(PC1 = master_list$summary_lists$list_pc_filters$PC1,
-                                   PC2 = master_list$summary_lists$list_pc_filters$PC2,
-                                   PC3 = master_list$summary_lists$list_pc_filters$PC2)
+master_list$pc_filter_plots <- lst(PC1 = master_list$summary_lists$list_pc_filter$PC1$plotly,
+                                   PC2 = master_list$summary_lists$list_pc_filter$PC2$plotly,
+                                   PC3 = master_list$summary_lists$list_pc_filter$PC3$plotly)
 
  qc_fail <- c(qc_fail, 
                length(which(grepl("LTR", master_list$summary_lists$list_pc_filter$fail_list))))
