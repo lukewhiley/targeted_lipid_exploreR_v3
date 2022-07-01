@@ -10,22 +10,22 @@ load(file = file.choose())
 #source LGW github functions
 #pca function
 master_list$functions$pca <- source(paste0(master_list$project_details$github_master_dir,
-                                           "/functions/FUNC_lipidexploreR_PCA.R"))
+                                           "/functions/FUNC_lipidExploreR_PCA.R"))
 #missing value filter
 master_list$functions$miss_value_filter <- source(paste0(master_list$project_details$github_master_dir,
-                                                         "/functions/FUNC_lipidexploreR_missing_value_filter.R"))
+                                                         "/functions/FUNC_lipidExploreR_missing_value_filter.R"))
 #impute data
 master_list$functions$impute_data <- source(paste0(master_list$project_details$github_master_dir,
-                                                   "/functions/FUNC_lipidexploreR_impute_data.R"))
+                                                   "/functions/FUNC_lipidExploreR_impute_data.R"))
 #concentration calculator
 master_list$functions$conc_calc <-  source(paste0(master_list$project_details$github_master_dir,
-                                                  "/functions/FUNC_lipidexploreR_conc_calculator.R"))
+                                                  "/functions/FUNC_lipidExploreR_conc_calculator.R"))
 #pca qc filter
 master_list$functions$pca_filter <- source(paste0(master_list$project_details$github_master_dir,
-                                                  "/functions/FUNC_lipidexploreR_pca_filter.R"))
+                                                  "/functions/FUNC_lipidExploreR_pca_filter.R"))
 #signal/batch correction
 master_list$functions$signal_correct <- source(paste0(master_list$project_details$github_master_dir,
-                                                      "/functions/FUNC_lipidexploreR_signal_drift_correct.R"))
+                                                      "/functions/FUNC_lipidExploreR_signal_drift_correct.R"))
 
 
 ############################################## SECTION 2: transpose data to standard metabolomics structure (features in columns, samples in rows)  
