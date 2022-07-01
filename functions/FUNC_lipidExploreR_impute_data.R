@@ -31,8 +31,10 @@ if(total_missing_values != 0 & FUNC_option_impute_missing_data == TRUE){
     temp_impute_data <- FUNC_list$metabolite_data[,idx_num_impute]
     non_zero_values_idx <- which(temp_impute_data > 0) 
     zero_values_idx <- which(temp_impute_data == 0)
+    if(length(non_zero_values_idx) > 0){
     impute_value <- min(temp_impute_data[non_zero_values_idx,])/2
     FUNC_list$metabolite_data[zero_values_idx,idx_num_impute] <- impute_value
+    }
   }
   
   }
