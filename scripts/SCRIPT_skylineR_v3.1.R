@@ -1,57 +1,3 @@
----
-title: "ANPC SkylineR v3.1"
-output:
-  pdf_document: default
-  html_document:
-    df_print: paged
----
-<!-- This notebook is designed for use with the ANPC targeted lipid method. 
-Section 1: SkylineR is designed to optimise lipidomics data processing in combination with skyline.
-
-
-Section 1 - SkylineR
-
-This notebook is designed to optimise lipidomics data processing in combination with skylineMS.
-
-It will perform:
-- retention time optimisation by identifying peaks in LTR or QC samples
-- standardised peak boundary fitting to all samples
-
-REQUIREMENTS:
-- A subfolder containig mzML files created by proteowizard msconvert version 3.0.19. Later versions of MS convert can cause problems with mzR package in r
-
-- mzML files from LTR samples must have "LTR" in their filename with matched case
-
-The mrm guide file must contain:
-- A csv template containing the target transition details. ONLY the following column headers should be present: 
-      - "Molecule List" (lipid family (e.g. CE))
-      - "Precursor Name" (lipid name (e.g. CE(14:0)))
-      - "Precursor Mz" (e.g. 614.6)
-      - "Precursor Charge" (set as 1)
-      - "Product Mz" (e.g. 369.4)
-      - "Product Charge" (set as 1)
-      - "Explicit Retention Time" (e.g. 11.66)
-      - "Explicit Retention Time Window" (leave at 0.5)
-      - "Note" in the column "Note" insert the SIL IS to be used for the target lipid. For the rows containing SIL IS themselves leave the note column blank.
-      
-      -->
-
-
-```{r set up project structure and load packages, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
-#### load packages
-package_list <- c('svDialogs', 'plyr', 'tidyverse', 'ggpubr', 'janitor', 'shiny', 'plotly', 'statTarget', 'metabom8', 'knitr', 'viridisLite', 'mzR', 'httr')
-
-for(idx_package in package_list){
-  if(length(which(row.names(installed.packages()) == idx_package)) > 0){
-  suppressMessages(require(package = idx_package,
-                                         character.only = TRUE))
-  } else {
-    dlg_message(
-    paste0(idx_package, " is not installed. Please install ", idx_package, " before continuing.")
-    )
-  }
-}
-
 #welcome message
 dlg_message("Welcome to skylineR! :-)", type = 'ok')
 
@@ -90,8 +36,8 @@ master_list$functions$mrm_pb_findeR <- source(paste0(
 dlg_message("convert SCIEX files to mzML", type = 'ok'); dlg_message(paste0("mzML directory: [", paste0(master_list$project_details$project_dir, "/data/mzml"), "]"), type = 'ok'); dlg_message("put mzML files in sub folders per plate [/data/mzml/plate_1; /data/mzml/plate_2] etc")
 
 master_list$project_details$mzml_plate_list <- list.dirs(paste0(master_list$project_details$project_dir, 
-                                   "/data/mzml"),
-                             full.names = FALSE)
+                                                                "/data/mzml"),
+                                                         full.names = FALSE)
 
 master_list$project_details$mzml_plate_list <- master_list$project_details$mzml_plate_list[grep("plate_", master_list$project_details$mzml_plate_list)]
 
@@ -101,47 +47,47 @@ dlg_message(paste0("there are ", length(master_list$project_details$mzml_plate_l
 mzml_filelist <- list()
 plate_list <- NULL
 for(idx_plate in master_list$project_details$mzml_plate_list){
-mzml_filelist[[idx_plate]] <- list.files(paste0(master_list$project_details$project_dir, 
-                                    "/data/mzml/",
-                                    idx_plate),
-                                    pattern = ".mzML",
-                                    full.names = FALSE)
-
-plate_list <- c(plate_list, paste0(idx_plate," = ", length(mzml_filelist[[idx_plate]]), " samples; "))
+  mzml_filelist[[idx_plate]] <- list.files(paste0(master_list$project_details$project_dir, 
+                                                  "/data/mzml/",
+                                                  idx_plate),
+                                           pattern = ".mzML",
+                                           full.names = FALSE)
+  
+  plate_list <- c(plate_list, paste0(idx_plate," = ", length(mzml_filelist[[idx_plate]]), " samples; "))
 }
 
 dlg_message(plate_list, type = 'ok')
 temp_mzR_list = list()
 for(idx_plate in master_list$project_details$mzml_plate_list){
   master_list$data$mzR[[idx_plate]] <- list()
-#read in mzML files using mzR
-for(idx_mzML in mzml_filelist[[idx_plate]]){
-  master_list$data$mzR[[idx_plate]][[idx_mzML]] <- list()
-  master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object <- mzR::openMSfile(
-    filename = paste0(master_list$project_details$project_dir, 
-                      "/data/mzml/",
-                      idx_plate,"/", idx_mzML))
-  master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_header <- mzR::chromatogramHeader(master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object)
-  master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram <- mzR::chromatograms(master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object)
-  master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_timestamp <- master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object@backend$getRunStartTimeStamp()
-}
+  #read in mzML files using mzR
+  for(idx_mzML in mzml_filelist[[idx_plate]]){
+    master_list$data$mzR[[idx_plate]][[idx_mzML]] <- list()
+    master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object <- mzR::openMSfile(
+      filename = paste0(master_list$project_details$project_dir, 
+                        "/data/mzml/",
+                        idx_plate,"/", idx_mzML))
+    master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_header <- mzR::chromatogramHeader(master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object)
+    master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram <- mzR::chromatograms(master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object)
+    master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_timestamp <- master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object@backend$getRunStartTimeStamp()
+  }
   temp_mzR_list <- c(temp_mzR_list, master_list$data$mzR[[idx_plate]])
 }
 
 
 #######
 # Retention time optimiser
-  master_list$mrm_guides$mrm_guide_rt_update <- tibble()
+master_list$mrm_guides$mrm_guide_rt_update <- tibble()
 
 #run function
 master_list$mrm_guides$mrm_guide_rt_update <- master_list$functions$mrm_RT_findeR_mzR$value(
   FUNC_mzR = temp_mzR_list, #list for each sample containing $mzR_object; $mzR_header; $mzR_chromatogram
   FUNC_mrm_guide = master_list$mrm_guides$mrm_guide %>% clean_names(),
   FUNC_OPTION_qc_type = master_list$project_details$qc_type)
-  #FUNC_OPTION_max_qc_replicates = 100) # what percentage of LTRs should be used to calculate RT
+#FUNC_OPTION_max_qc_replicates = 100) # what percentage of LTRs should be used to calculate RT
 #set names so that skyline recognises columns
 master_list$mrm_guides$mrm_guide_rt_update <- setNames(master_list$mrm_guides$mrm_guide_rt_update,
-                                                     names(master_list$mrm_guides$mrm_guide))
+                                                       names(master_list$mrm_guides$mrm_guide))
 
 rm(temp_mzR_list)
 
@@ -172,11 +118,11 @@ master_list$data$skyline_reports$report_1 <- read_csv(file = paste0(list.files(
 master_list$mrm_guides$mrm_guide_pb_update <- list()
 for(idx_plate in master_list$project_details$mzml_plate_list){
   master_list$mrm_guides$mrm_guide_pb_update[[idx_plate]] <- master_list$functions$mrm_pb_findeR$value(
-  FUNC_data = master_list$data$skyline_reports$report_1 %>% 
-    clean_names() %>%
-    filter(replicate %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))),
-  FUNC_OPTION_qc_type = master_list$project_details$qc_type
-)
+    FUNC_data = master_list$data$skyline_reports$report_1 %>% 
+      clean_names() %>%
+      filter(replicate %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))),
+    FUNC_OPTION_qc_type = master_list$project_details$qc_type
+  )
 }
 #bind all rows into master pb list
 master_list$mrm_guides$mrm_guide_pb_update_all_plates <- bind_rows(master_list$mrm_guides$mrm_guide_pb_update)
@@ -202,6 +148,3 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/rda"))){
 save(master_list, file = paste0(master_list$project_details$project_dir,"/data/rda/", Sys.Date(), "_", master_list$project_details$project_name, "_skylineR.rda"))
 
 rm(list = c(ls()[which(ls() != "master_list")]))
-
-
-```

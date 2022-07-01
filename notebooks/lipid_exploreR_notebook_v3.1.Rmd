@@ -18,7 +18,7 @@ The type of QC used MUST be tagged in the filename with matched case (LTR not lt
 ```{r set up project structure, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 #### load packages
-package_list <- c('svDialogs', 'plyr', 'tidyverse', 'ggpubr', 'janitor', 'shiny', 'plotly', 'effsize', 'dunn.test', 'RColorBrewer', 'statTarget', 'metabom8', 'rstatix', 'ggpubr', 'cowplot', 'knitr', 'stats', 'viridisLite', 'ggbeeswarm', 'mzR')
+package_list <- c('svDialogs', 'plyr', 'tidyverse', 'ggpubr', 'janitor', 'shiny', 'plotly', 'statTarget', 'metabom8', 'knitr', 'viridisLite', 'mzR', 'httr')
 
 for(idx_package in package_list){
   if(length(which(row.names(installed.packages()) == idx_package)) > 0){
@@ -42,27 +42,24 @@ load(file = file.choose())
 #source LGW github functions
 #pca function
 master_list$functions$pca <- source(paste0(master_list$project_details$github_master_dir,
-                                           "/metabolomics_code/main/functions/2021_LGW_FUNC_PCA.R"))
+                                           "/functions/FUNC_lipidexploreR_PCA.R"))
 #missing value filter
 master_list$functions$miss_value_filter <- source(paste0(master_list$project_details$github_master_dir,
-                                                  "/metabolomics_code/main/functions/2022_LGW_FUNC_lipid_missing_value_filter.R"))
+                                                  "/functions/FUNC_lipidexploreR_missing_value_filter.R"))
 #impute data
 master_list$functions$impute_data <- source(paste0(master_list$project_details$github_master_dir,
-                                                   "/metabolomics_code/main/functions/2022_LGW_FUNC_lipid_impute_data.R"))
+                                                   "/functions/FUNC_lipidexploreR_impute_data.R"))
 #concentration calculator
 master_list$functions$conc_calc <-  source(paste0(master_list$project_details$github_master_dir,
-                                                  "/metabolomics_code/main/functions/2022_LGW_FUNC_lipid_conc_calculator.R"))
+                                                  "/functions/FUNC_lipidexploreR_conc_calculator.R"))
 #pca qc filter
 master_list$functions$pca_filter <- source(paste0(master_list$project_details$github_master_dir,
-                                                  "/metabolomics_code/main/functions/2022_LGW_FUNC_lipid_pca_filter.R"))
+                                                  "/functions/FUNC_lipidexploreR_pca_filter.R"))
 #signal/batch correction
-master_list$functions$signal_correct <- source(paste0(master_list$project_details$github_master_dir, 
-                                                      "/metabolomics_code/main/functions/LGW_FUNC_signal_drift_correct_v0.2.R"))
-#run order plot
-master_list$functions$run_order_plot <- source(paste0(master_list$project_details$github_master_dir,
-                                                      "/metabolomics_code/main/functions/2022_LGW_FUNC_lipid_pc_runorder_plot.R"))
+master_list$functions$signal_correct <- source(paste0(master_list$project_details$github_master_dir,
+                                                      "/functions/FUNC_lipidexploreR_signal_drift_correct.R"))
 
-#
+
 ############################################## SECTION 2: transpose data to standard metabolomics structure (features in columns, samples in rows)  
 # Chunk also creates a data summary
 #   -> number of samples
