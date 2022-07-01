@@ -44,6 +44,9 @@ skylineR_script <- GET(url = paste0("https://raw.githubusercontent.com/lukewhile
 
 eval(parse(text = skylineR_script), envir = .GlobalEnv)
 
+#clean environment
+rm(list = ls())
+
 ```
 
 
@@ -83,7 +86,6 @@ eval(parse(text = skylineR_script), envir = .GlobalEnv)
 #clean environment
 rm(list = ls())
 
-HELLO???
 
 
 ```
