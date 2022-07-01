@@ -27,6 +27,10 @@ master_list$functions$pca_filter <- source(paste0(master_list$project_details$gi
 master_list$functions$signal_correct <- source(paste0(master_list$project_details$github_master_dir,
                                                       "/functions/FUNC_lipidExploreR_signal_drift_correct.R"))
 
+#signal/batch correction
+master_list$functions$pc_run_plot <- source(paste0(master_list$project_details$github_master_dir,
+                                                      "/functions/FUNC_lipidExploreR_pc_runorder_plot.R"))
+
 
 ############################################## SECTION 2: transpose data to standard metabolomics structure (features in columns, samples in rows)  
 # Chunk also creates a data summary
@@ -636,6 +640,8 @@ master_list$pca_output$statTarget_corrected$plate <- master_list$functions$pca$v
 )
 
 
+
+
 ############# FINAL SAVE OF DATA
 
 ## save and load as appropriate
@@ -646,6 +652,23 @@ save(master_list,
        "_qcCheckeR_", 
        master_list$project_details$project_name, 
        ".rda"))
+
+
+#################### plot run order vs principle components
+
+master_list$pc_run_plot <- list()
+master_list$pc_run_plot <- master_list$functions$pc_run_plot$value(
+  FUNC_data = master_list$data$statTarget_corrected,
+  FUNC_metabolite_list = master_list$data$statTarget_corrected %>%
+    select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor_rev",
+  FUNC_plot_label = "sample_name",
+  FUNC_scaling = "UV",
+  FUNC_title = paste0(master_list$project_details$project_name),
+  FUNC_project_colours = c("white", "steelblue2"),
+  FUNC_option_point_size = 3,
+  FUNC_option_plot_qc = TRUE
+)
 
 
 #clean environment

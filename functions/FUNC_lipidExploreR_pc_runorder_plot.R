@@ -13,22 +13,14 @@ lgw_pc_run_plot <- function(FUNC_data,
                     FUNC_title,
                     FUNC_project_colours,
                     FUNC_option_point_size,
-                    #FUNC_option_invert_y,
-                    #FUNC_option_invert_x,
                     FUNC_option_plot_qc
-                    #FUNC_option_iqr_filter_samples,
-                    #FUNC_option_iqr_filter_qc
                     ){
   require(metabom8)
-  require(RColorBrewer)
   require(tidyverse)
   require(plotly)
   
   pca_output <- list()
   pca_output$plots <- list()
-  
-  
-  #browser()
   
   title_text <- FUNC_title
   
