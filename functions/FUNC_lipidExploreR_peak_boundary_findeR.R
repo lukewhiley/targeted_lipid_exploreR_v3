@@ -25,7 +25,7 @@ rt_boundary_output <- lapply(FUNC_metabolite, function(FUNC_LIPID){
     end_time <- rt_boundary %>% select(end_time) %>% sapply(as.numeric) %>% max()
    
     rt_boundary_filelist <- FUNC_filenames %>% as_tibble() %>% rename(FileName = value)
-    rt_boundary_filelist$FullMoleculeName <- FUNC_LIPID
+    rt_boundary_filelist$FullPeptideName <- FUNC_LIPID
     rt_boundary_filelist$MinStartTime <- round(start_time,2)
     rt_boundary_filelist$MaxEndTime <- round(end_time, 2)
     rt_boundary_filelist
