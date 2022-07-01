@@ -655,7 +655,7 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 # render a html report
 
 fileConn<-file(paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_template.r"))
-writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/targeted_lipid_exploreR_v2/main/templates/TEMPLATE_lipidExploreR_report.r")) %>%
+writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/templates/TEMPLATE_lipidExploreR_report.r")) %>%
              httr::content(as = "text"), fileConn)
 close(fileConn)
 
