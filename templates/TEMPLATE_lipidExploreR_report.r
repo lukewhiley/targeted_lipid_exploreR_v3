@@ -8,9 +8,9 @@
 #' 
 #' ***
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-Sys.Date()
+print(Sys.Date())
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$project_details$project_name
+print(master_list$project_details$project_name)
 #' 
 #' 
 #' ***
@@ -168,14 +168,15 @@ subplot(master_list$pca_output$statTarget_corrected$sample_qc$plot_scores, maste
 #' 
 #' ***
 #' #### Environment summary
+#' R version
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$environment$r_version
+print(master_list$environment$r_version)
 #' Base packages
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$environment$base_packages
+print(master_list$environment$base_packages)
 #' User packages
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$environment$user_packages
+print(master_list$environment$user_packages)
 #' ***
 
 
