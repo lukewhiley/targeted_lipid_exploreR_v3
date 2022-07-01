@@ -1,5 +1,5 @@
 ---
-title: "Lipid exploreR v3.1"
+title: "Lipid exploreR v3.2"
 output:
   html_document:
     df_print: paged
