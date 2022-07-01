@@ -666,4 +666,9 @@ rmarkdown::render(input = paste0(master_list$project_details$project_dir, "/html
                   output_file = paste0(Sys.Date(), "_", master_list$project_details$project_name, "_lipidExploreR_qcCheckeR_report.html")
 )
 
+browseURL(url = paste0(master_list$project_details$project_dir, 
+                       "/html_report/",
+                       paste0(Sys.Date(), "_", master_list$project_details$project_name, "_lipidExploreR_qcCheckeR_report.html"))
+)
+
 
