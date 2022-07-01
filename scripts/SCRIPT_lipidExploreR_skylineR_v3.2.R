@@ -7,12 +7,19 @@ master_list <- list(); master_list$project_details <- list(); master_list$functi
 ##USER INPUT##
 #set project details
 dlg_message("select project directory", type = 'ok');master_list$project_details$project_dir <- rstudioapi::selectDirectory()
+#set lipidExploreR version
+master_list$project_details$lipidExploreR_version <- "3.2"
 #set user
 master_list$project_details$user_name <- dlgInput("user", "example_initials")$res
 #set project name
 master_list$project_details$project_name <- dlgInput("project", "project_name")$res
 #set qc-type
 master_list$project_details$qc_type <- dlgInput("qc type used - tag MUST be in filename of mzML files (matched case)", "LTR/SR/PQC")$res
+#create summary table for report
+master_list$summary_tables$project_summary <- tibble(unlist(master_list$project_details)) %>%
+  add_column("Project detail" = c("lipidExploreR version", "user initials", "project name", "project qc type"),
+             .before = 1)
+master_list$summary_tables$project_summary <- setNames(master_list$summary_tables$project_summary, c("Project detail", "value"))
 
 #github master directory
 master_list$project_details$github_master_dir <- "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main"

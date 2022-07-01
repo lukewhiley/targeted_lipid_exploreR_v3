@@ -8,6 +8,12 @@
 #' Thank you for using SkylineR and Lipid ExploreR.
 #' 
 #' 
+#' #' ***
+#' ### Project details
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+knitr::kable(master_list$summary_tables$project_summary)
+#' 
+#' 
 #' ***
 #' ### Data import summary
 #' 
