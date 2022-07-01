@@ -17,7 +17,7 @@ master_list$project_details$project_name <- dlgInput("project", "project_name")$
 master_list$project_details$qc_type <- dlgInput("qc type used - tag MUST be in filename of mzML files (matched case)", "LTR/SR/PQC")$res
 #create summary table for report
 master_list$summary_tables$project_summary <- tibble(unlist(master_list$project_details)) %>%
-  add_column("Project detail" = c("lipidExploreR version", "user initials", "project name", "project qc type"),
+  add_column("Project detail" = c("local directory", "lipidExploreR version", "user initials", "project name", "project qc type"),
              .before = 1)
 master_list$summary_tables$project_summary <- setNames(master_list$summary_tables$project_summary, c("Project detail", "value"))
 
