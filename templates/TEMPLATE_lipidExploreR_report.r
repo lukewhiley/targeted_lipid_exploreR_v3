@@ -149,9 +149,9 @@ knitr::kable(master_list$summary_tables$statTarget_corrected)
 #' #### Run order plot
 #' Plot of run order vs principle components
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-subplot(master_list$pc_run_plot$PC1, 
-        master_list$pc_run_plot$PC2, 
-        master_list$pc_run_plot$PC3)
+subplot(master_list$pc_run_plot$PC1$plotly, 
+        master_list$pc_run_plot$PC2$plotly, 
+        master_list$pc_run_plot$PC3$plotly)
 #'
 #' ***
 #' 
