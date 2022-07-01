@@ -16,7 +16,7 @@ lgw_pca <- function(FUNC_data,
                     FUNC_option_invert_x,
                     FUNC_option_plot_qc){
   require(metabom8)
-  require(RColorBrewer)
+  #require(RColorBrewer)
   require(tidyverse)
   require(plotly)
   
