@@ -4,12 +4,17 @@
 #' output: html_document
 #' 
 #' ---
-
-#' Thank you for using SkylineR and Lipid ExploreR.
 #' 
 #' 
-#' #' ***
-#' ### Project details
+#' ***
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+Sys.Date()
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+master_list$project_details$project_name
+#' 
+#' 
+#' ***
+#' #### Project summary
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 knitr::kable(master_list$summary_tables$project_summary)
 #' 
@@ -161,6 +166,17 @@ knitr::kable(master_list$summary_tables$statTarget_corrected)
 subplot(master_list$pca_output$statTarget_corrected$sample_qc$plot_scores, master_list$pca_output$statTarget_corrected$plate$plot_scores)
 #'
 #' 
+#' ***
+#' #' #### Environment summary
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+master_list$environment$r_version
+#' Base packages
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+master_list$environment$base_packages
+#' User packages
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+master_list$environment$user_packages
+#' ***
 
 
 
