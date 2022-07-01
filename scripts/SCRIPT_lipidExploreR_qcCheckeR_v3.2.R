@@ -543,14 +543,14 @@ master_list$summary_tables$statTarget_corrected <- tibble()
 temp_missing_data <- NULL
 
 #create batch correction directory
-if(!dir.exists(paste0(master_list$project_details$project_dir, "/batch_correction"))){
-  dir.create(paste0(master_list$project_details$project_dir, "/batch_correction"))
+if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/batch_correction"))){
+  dir.create(paste0(master_list$project_details$project_dir, "/data/batch_correction"))
 }
 
 #run batch correction PER PROJECT 
 master_list$data$statTarget_corrected <- master_list$functions$signal_correct$value(
   FUNC_project_directory = paste0(master_list$project_details$project_dir,
-                                  "/batch_correction/"),
+                                  "/data/batch_correction/"),
   FUNC_data = master_list$data$pc_filter,
   FUNC_metabolite_list = master_list$data$pc_filter %>%
     select(-contains("sample")) %>% names(),
