@@ -167,7 +167,7 @@ subplot(master_list$pca_output$statTarget_corrected$sample_qc$plot_scores, maste
 #'
 #' 
 #' ***
-#' #' #### Environment summary
+#' #### Environment summary
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 master_list$environment$r_version
 #' Base packages
