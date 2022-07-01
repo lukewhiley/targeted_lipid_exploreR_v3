@@ -2,12 +2,7 @@
 dlg_message("Welcome to skylineR! :-)", type = 'ok')
 
 #set up project master list
-master_list <- list(); master_list$environment <- list(); master_list$project_details <- list(); master_list$functions <- list();  master_list$mrm_guides <- list(); master_list$data <- list(); master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list()
-
-master_list$environment$r_version <- sessionInfo()$R.version$version.string
-master_list$environment$base_packages <- sessionInfo()$base
-master_list$environment$user_packages <- paste0(names(sessionInfo()$otherPkgs), ": ", installed.packages()[names(sessionInfo()$otherPkgs), "Version"])
-
+master_list <- list(); master_list$project_details <- list(); master_list$functions <- list();  master_list$mrm_guides <- list(); master_list$data <- list(); master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list()
 
 ##USER INPUT##
 #set project details
@@ -22,9 +17,9 @@ master_list$project_details$project_name <- dlgInput("project", "project_name")$
 master_list$project_details$qc_type <- dlgInput("qc type used - tag MUST be in filename of mzML files (matched case)", "LTR/SR/PQC")$res
 #create summary table for report
 master_list$summary_tables$project_summary <- tibble(unlist(master_list$project_details)) %>%
-  add_column("Project detail" = c("local directory", "lipidExploreR version", "user initials", "project name", "project qc type"),
+  add_column("Project detail" = c("lipidExploreR version", "user initials", "project name", "project qc type"),
              .before = 1)
-master_list$summary_tables$project_summary <- setNames(master_list$summary_tables$project_summary, c("attribute", "value"))
+master_list$summary_tables$project_summary <- setNames(master_list$summary_tables$project_summary, c("Project detail", "value"))
 
 #github master directory
 master_list$project_details$github_master_dir <- "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main"
@@ -54,9 +49,8 @@ master_list$mrm_guides$mrm_guide <- read_csv(
 #source functions
 #RT finder
 master_list$functions$mrm_RT_findeR_mzR <- source(paste0(
-  master_list$project_details$github_master_dir, 
+  master_list$project_details$github_master_dir , 
   "/functions/FUNC_lipidExploreR_MRM_findeR_pwiz3019_mzR.R"))
-
 
 #peak_boundary findeR
 master_list$functions$mrm_pb_findeR <- source(paste0(
@@ -122,8 +116,8 @@ rm(temp_mzR_list)
 
 #export updated optimised RT times
 write_csv(x = master_list$mrm_guides$mrm_guide_rt_update,
-          file = paste0(master_list$project_details$project_dir, "/data/skyline/", Sys.Date(), "_", 
-                        master_list$project_details$project_name, "_mrm_skylineR_RT_update.csv"))
+          file = paste0(master_list$project_details$project_dir, "/data/skyline/", Sys.Date(), "_RT_update_", 
+                        master_list$project_details$project_name, ".csv"))
 
 #create directory for storing skyline exports
 if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline"))){
@@ -153,8 +147,8 @@ master_list$mrm_guides$mrm_guide_pb_update_all_plates <- bind_rows(master_list$m
 
 #write peak boundary output
 write_csv(x = master_list$mrm_guides$mrm_guide_pb_update_all_plates,
-          file = paste0(master_list$project_details$project_dir, "/data/skyline/", Sys.Date(), "_", 
-                        master_list$project_details$project_name, "_mrm_peak_boundary_updated.csv"))
+          file = paste0(master_list$project_details$project_dir, "/data/skyline/", Sys.Date(), "_peak_boundary_update_", 
+                        master_list$project_details$project_name, ".csv"))
 
 dlg_message("1. Please return to skylineMS software", type = 'ok'); dlg_message("2. Import the new skylineR_boundary_update.csv transition list from csv file by navigating to File -> import -> peak boundaries", type = 'ok'); dlg_message("4. Save project", type = 'ok');dlg_message("5. Export results to [~project_directory/data/skyline] folder with the tag xSkylineR_2.  Export reports must have the following headings: Replicate, Protein, Peptide, Area, Retention Time, Start Time and End Time", type = 'ok'); dlg_message("7. Now return to R Studio and run the lipid_exploreR to QC check data", type = 'ok')
 
@@ -169,10 +163,6 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/rda"))){
   dir.create(paste0(master_list$project_details$project_dir, "/data/rda"))
 }
 
-save(master_list, file = paste0(master_list$project_details$project_dir,
-                                "/data/rda/", 
-                                Sys.Date(), "_skylineR_", 
-                                master_list$project_details$project_name, 
-                                ".rda"))
+save(master_list, file = paste0(master_list$project_details$project_dir,"/data/rda/", Sys.Date(), "_", master_list$project_details$project_name, "_skylineR.rda"))
 
 rm(list = c(ls()[which(ls() != "master_list")]))
