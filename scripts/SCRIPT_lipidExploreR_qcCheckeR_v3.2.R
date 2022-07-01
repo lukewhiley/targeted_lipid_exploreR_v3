@@ -654,19 +654,15 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 
 # render a html report
 
-if(!dir.exists(paste0(master_list$project_details$project_dir, "/html_reports"))){
-  dir.create(paste0(master_list$project_details$project_dir, "/html_reports"))
-}
-
-fileConn<-file(paste0(master_list$project_details$project_dir, "/html_reports/lipid_exploreR_report_template.r"))
+fileConn<-file(paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_template.r"))
 writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/targeted_lipid_exploreR_v2/main/templates/TEMPLATE_lipidExploreR_report.r")) %>%
              httr::content(as = "text"), fileConn)
 close(fileConn)
 
 
-rmarkdown::render(input = paste0(master_list$project_details$project_dir, "/html_reports/lipid_exploreR_report_template.r"),
+rmarkdown::render(input = paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_template.r"),
                   output_format = "html_document",
-                  output_dir = paste0(master_list$project_details$project_dir, "/html_reports"),
+                  output_dir = paste0(master_list$project_details$project_dir, "/html_report"),
                   output_file = paste0(Sys.Date(), "_", master_list$project_details$project_name, "_lipidExploreR_qcCheckeR_report.html")
 )
 
