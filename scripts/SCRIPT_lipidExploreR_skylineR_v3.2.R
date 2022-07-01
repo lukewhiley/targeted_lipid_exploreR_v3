@@ -5,9 +5,9 @@ dlg_message("Welcome to skylineR! :-)", type = 'ok')
 master_list <- list(); master_list$environment <- list(); master_list$project_details <- list(); master_list$functions <- list();  master_list$mrm_guides <- list(); master_list$data <- list(); master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list()
 
 #store environment details
-master_list$environment <- sessionInfo()$R.version$version.string
-master_list$base_packages <- sessionInfo()$basePkgs
-master_list$user_packages <- paste0(names(sessionInfo()$otherPkgs), ": ", paste0(installed.packages()[names(sessionInfo()$otherPkgs), "Version"]))
+master_list$environment$r_version <- sessionInfo()$R.version$version.string
+master_list$environment$base_packages <- sessionInfo()$basePkgs
+master_list$environment$user_packages <- paste0(names(sessionInfo()$otherPkgs), ": ", paste0(installed.packages()[names(sessionInfo()$otherPkgs), "Version"]))
 
 ##USER INPUT##
 #set project details
