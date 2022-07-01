@@ -8,9 +8,9 @@
 #' 
 #' ***
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-print(Sys.Date())
+cat(Sys.Date())
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-print(master_list$project_details$project_name)
+cat(master_list$project_details$project_name)
 #' 
 #' 
 #' ***
