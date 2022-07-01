@@ -56,7 +56,8 @@ lgw_pca_filter <- function(FUNC_data,
   PC2 <- as.numeric(as.matrix(pca_output$pca_model@t[,2]))
   PC3 <- as.numeric(as.matrix(pca_output$pca_model@t[,3]))
 
-  plot_Val <- as_tibble(cbind(PC1, PC2, PC3, FUNC_data$sample_idx, FUNC_data$sample_name,  FUNC_data$sample_type)) %>% setNames(c("PC1", "PC2", "PC3", "sample_idx", "sample_name", "sample_type"))
+  plot_Val <- as_tibble(cbind(PC1, PC2, PC3, FUNC_data$sample_idx, FUNC_data$sample_name,  FUNC_data$sample_type, FUNC_data$sample_plate_id)) %>% 
+    setNames(c("PC1", "PC2", "PC3", "sample_idx", "sample_name", "sample_type", "sample_plate_id"))
   plot_Val$sample_idx <- c(1:nrow(plot_Val)) %>% as.numeric()
   plot_Val$PC1 <- plot_Val$PC1 %>% as.numeric()
   plot_Val$PC2 <- plot_Val$PC2 %>% as.numeric()
@@ -167,13 +168,16 @@ lgw_pca_filter <- function(FUNC_data,
   )
   
   #create vertical lines to separate classes on plot
-  #FUNC_data_batches <- plot_Val$sample_batch %>% unique()
-  # batch_idx <- NULL
-  # for(idx_batch in FUNC_data_batches[2:length(FUNC_data_batches)]){
-  #   batch_idx <- c(batch_idx, min(which(plot_Val$sample_batch == idx_batch)))
-  # }
+  FUNC_data_batches <- plot_Val$sample_plate_id %>% unique()
+  batch_idx <- NULL
   
-  #bp <- bp + geom_vline(xintercept=c(batch_idx),color="grey")
+  if(length(FUNC_data_batches) > 1){
+    for(idx_batch in FUNC_data_batches[2:length(FUNC_data_batches)]){
+      batch_idx <- c(batch_idx, min(which(plot_Val$sample_plate_id == idx_batch)))
+    }
+    
+    bp <- bp + geom_vline(xintercept=c(batch_idx),color="grey")
+  }
   
   pca_output[[idx_PC]]$plotly <- bp %>% ggplotly() %>% layout(legend = list(orientation = "h",   # show entries horizontally
                                                                                       xanchor = "center",  # use center of legend as anchor

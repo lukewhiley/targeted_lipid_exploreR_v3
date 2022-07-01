@@ -88,20 +88,16 @@ lgw_pc_run_plot <- function(FUNC_data,
                    y=get(idx_PC))
   )
   
-  bp <- bp + geom_point(aes(#text = sample_name,
-                            fill = pca_plot_colour#,
-                            #color = sample_type_factor
+  bp <- bp + geom_point(aes(fill = pca_plot_colour#,
   ),
   shape = 21,
   size = FUNC_option_point_size
   )
   
   bp <- bp + scale_fill_manual(values = c(plot_colours))
-  #bp <- bp + scale_color_manual("black")
   
   bp <- bp + labs(x = paste("Sample order"),
                   y = paste0(idx_PC))
-  #bp <- bp + ggtitle(paste0(FUNC_title, " - ", idx_PC))
   bp <- bp + ggtitle(paste0(idx_PC))
   bp <- bp + theme_cowplot() 
   bp <- bp + theme(
