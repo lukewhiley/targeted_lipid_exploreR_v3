@@ -643,9 +643,9 @@ save(master_list,
      file = paste0(
        master_list$project_details$project_dir,
        "/data/rda/", Sys.Date(), 
-       "_", master_list$project_details$user_name, 
-       "_", master_list$project_details$project_name, 
-       "_master_list_post_processing.rda"))
+       "_qcCheckeR_", 
+       master_list$project_details$project_name, 
+       ".rda"))
 
 
 #clean environment
@@ -659,7 +659,7 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/html_reports"))
 }
 
 fileConn<-file(paste0(master_list$project_details$project_dir, "/html_reports/lipid_exploreR_report_template.r"))
-writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/targeted_lipid_exploreR_v2/main/scripts/lipid_exploreR_report_template.r")) %>%
+writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/targeted_lipid_exploreR_v2/main/templates/TEMPLATE_lipidExploreR_report.r")) %>%
              httr::content(as = "text"), fileConn)
 close(fileConn)
 
@@ -667,7 +667,7 @@ close(fileConn)
 rmarkdown::render(input = paste0(master_list$project_details$project_dir, "/html_reports/lipid_exploreR_report_template.r"),
                   output_format = "html_document",
                   output_dir = paste0(master_list$project_details$project_dir, "/html_reports"),
-                  output_file = paste0(Sys.Date(), "_", master_list$project_details$user_name, "_", master_list$project_details$project_name, "_lipid_exploreR_QC_report.html")
+                  output_file = paste0(Sys.Date(), "_", master_list$project_details$project_name, "_lipidExploreR_qcCheckeR_report.html")
 )
 
 

@@ -163,6 +163,10 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/rda"))){
   dir.create(paste0(master_list$project_details$project_dir, "/data/rda"))
 }
 
-save(master_list, file = paste0(master_list$project_details$project_dir,"/data/rda/", Sys.Date(), "_", master_list$project_details$project_name, "_skylineR.rda"))
+save(master_list, file = paste0(master_list$project_details$project_dir,
+                                "/data/rda/", 
+                                Sys.Date(), "_skylineR_", 
+                                master_list$project_details$project_name, 
+                                ".rda"))
 
 rm(list = c(ls()[which(ls() != "master_list")]))
