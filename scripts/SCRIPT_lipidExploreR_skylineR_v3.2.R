@@ -54,8 +54,9 @@ master_list$mrm_guides$mrm_guide <- read_csv(
 #source functions
 #RT finder
 master_list$functions$mrm_RT_findeR_mzR <- source(paste0(
-  master_list$project_details$github_master_dir , 
+  master_list$project_details$github_master_dir, 
   "/functions/FUNC_lipidExploreR_MRM_findeR_pwiz3019_mzR.R"))
+
 
 #peak_boundary findeR
 master_list$functions$mrm_pb_findeR <- source(paste0(
