@@ -40,27 +40,27 @@ master_list$data$transposed <- list()
 master_list$summary_tables$transposed_summary <- tibble()
 
 #create array of unique features
-lipid_features <- master_list$data$skyline_reports$report_2$peptide %>% unique()
+lipid_features <- master_list$data$skyline_reports$report_2$molecule_name %>% unique()
 
 for(idx_plate in master_list$project_details$mzml_plate_list){
   
   #create array of unique samples in the list
   master_list$data$transposed[[idx_plate]] <- 
     master_list$data$skyline_reports$report_2 %>%
-    filter(replicate %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))) %>%
-    select(replicate) %>% 
+    filter(replicate_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))) %>%
+    select(replicate_name) %>% 
     unique() %>% 
-    rename(sample_name = replicate) 
+    rename(sample_name = replicate_name) 
   
   for (idx_lipid in lipid_features){
     master_list$data$transposed[[idx_plate]] <-
       left_join(master_list$data$transposed[[idx_plate]],
                 master_list$data$skyline_reports$report_2 %>%
-                  filter(replicate %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))) %>%
-                  filter(peptide == idx_lipid) %>%
-                  select(replicate, area) %>%
+                  filter(replicate_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))) %>%
+                  filter(molecule_name == idx_lipid) %>%
+                  select(replicate_name, area) %>%
                   rename_with(~all_of(idx_lipid), "area") %>%
-                  rename(sample_name = replicate),
+                  rename(sample_name = replicate_name),
                 by = "sample_name")
     
     #make numeric 
