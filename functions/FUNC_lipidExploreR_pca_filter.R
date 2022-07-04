@@ -56,8 +56,8 @@ lgw_pca_filter <- function(FUNC_data,
   PC2 <- as.numeric(as.matrix(pca_output$pca_model@t[,2]))
   PC3 <- as.numeric(as.matrix(pca_output$pca_model@t[,3]))
 
-  plot_Val <- as_tibble(cbind(PC1, PC2, PC3, FUNC_data$sample_idx, FUNC_data$sample_name,  FUNC_data$sample_type, FUNC_data$sample_plate_id)) %>% 
-    setNames(c("PC1", "PC2", "PC3", "sample_idx", "sample_name", "sample_type", "sample_plate_id"))
+  plot_Val <- as_tibble(cbind(PC1, PC2, PC3, FUNC_data$sample_name,  FUNC_data$sample_type, FUNC_data$sample_plate_id)) %>% 
+    setNames(c("PC1", "PC2", "PC3",  "sample_name", "sample_type", "sample_plate_id"))
   plot_Val$sample_idx <- c(1:nrow(plot_Val)) %>% as.numeric()
   plot_Val$PC1 <- plot_Val$PC1 %>% as.numeric()
   plot_Val$PC2 <- plot_Val$PC2 %>% as.numeric()
