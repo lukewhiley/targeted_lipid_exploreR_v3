@@ -19,7 +19,7 @@ lgw_lipid_conc_calc <- function(FUNC_data,
     concentration <- (response_ratio * (FUNC_conc_guide %>% 
       filter(sil_name == all_of(idx_sil)) %>%
       select(concentration_factor) %>% as.numeric())) %>% as_tibble()
-    FUNC_list <- cbind(FUNC_out, concentration)
+    FUNC_out <- bind_cols(FUNC_out, concentration)
     }}}
 
   FUNC_out
