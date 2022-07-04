@@ -22,5 +22,5 @@ lgw_lipid_conc_calc <- function(FUNC_data,
     FUNC_list <- cbind(FUNC_out, concentration)
     }}}
 
-  FUNC_list$out
+  FUNC_out
 }
