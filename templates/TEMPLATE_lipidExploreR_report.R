@@ -20,7 +20,7 @@ knitr::kable(master_list$summary_tables$transposed_summary)
 #'
 #' ***
 #' #### PCA: Raw skyline imports
-#' PCA displaying raw data imported from skyline. 
+#' PCA displaying raw data imported from skyline 
 #' * There has been no outlier removal or data processing at this point.
 #'
 #'
@@ -43,8 +43,8 @@ subplot(master_list$pca_output$data_sorted$sample_qc$plot_scores, master_list$pc
 knitr::kable(master_list$summary_tables$missing_value_filter_summary)
 #'
 #'
-#' The following internal standards failed the missing value filter and were removed from the project. 
-#' Note - metabolite targets that use these internal standards for calculation of response ratio and concentrations are also removed.
+#' The following internal standards failed the missing value filter and were removed from the project 
+#' * Note - metabolite targets that use these internal standards for calculation of response ratio and concentrations are also removed.
 #'
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 knitr::kable(master_list$summary_lists$missing_value_filter$failed_SIL %>% as_tibble() %>% rename(internal_standard = value))
@@ -52,7 +52,7 @@ knitr::kable(master_list$summary_lists$missing_value_filter$failed_SIL %>% as_ti
 #' ***
 #' 
 #' #### PCA: Post-missing value filter
-#' PCA displaying data that has undergone:
+#' PCA displaying data that has undergone: 
 #' * missing value filtering
 #' 
 #' 
@@ -90,10 +90,10 @@ knitr::kable(master_list$summary_tables$concentration_summary)
 #' ***
 #' 
 #' ##### PCA: Post-calculation of internal standard ratio's and conversion to concentration values
-#' PCA displaying data that has undergone:
-#' * missing value filtering
-#' * imputation of remaining missing values
-#' *calculation of response ratios (target analyte peak area/internal standard peak area) 
+#' PCA displaying data that has undergone: 
+#' * missing value filtering 
+#' * imputation of remaining missing values 
+#' * calculation of response ratios (target analyte peak area/internal standard peak area) 
 #' 
 #' 
 #' 
@@ -104,11 +104,10 @@ subplot(master_list$pca_output$concentration$sample_qc$plot_scores, master_list$
 #' ***
 #' 
 #' ### Process step: Sample outlier filter
-#' Filter to remove all outlier samples with excessive principal component (PC) variation
-#' * Step 1 : Create PCA scores for PC 1:3
-#' * Step 2: Find samples with PC score > 1.5 standard deviation of median PC
-#' 
-#' note - filter is in development and under evaluation
+#' Filter to remove all outlier samples with excessive principal component (PC) variation 
+#' * Step 1 : Create PCA scores for PC 1:3 
+#' * Step 2: Find samples with PC score > 1.5 standard deviation of median PC 
+#' * note - filter is in development and under evaluation 
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
@@ -128,10 +127,10 @@ master_list$pc_run_plot$pc_filter$PC3
 #' ***
 #' 
 #' #### PCA: Post-principal component filter
-#' PCA displaying data that has undergone:
-#' * missing value filtering
-#' * imputation of remaining missing values
-#' * calculation of response ratios (target analyte peak area/internal standard peak area) 
+#' PCA displaying data that has undergone: 
+#' * missing value filtering 
+#' * imputation of remaining missing values 
+#' * calculation of response ratios (target analyte peak area/internal standard peak area)  
 #' * principal component filtration
 #' 
 #' 
@@ -153,7 +152,7 @@ knitr::kable(master_list$summary_tables$batch_correction_overview)
 #'
 #' ***
 #' 
-#' #' #### Run order plot: pre-statTarget correction
+#' #### Run order plot: pre-statTarget correction
 #' Plot of run order vs principle components
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 master_list$pc_run_plot$pre_statTarget$PC1$plotly
@@ -176,11 +175,11 @@ master_list$pc_run_plot$post_statTarget$PC3$plotly
 #' ***
 #' 
 #' #### PCA: Post-signal drift/batch correction
-#' PCA displaying data that has undergone:
-#' * missing value filtering
-#' * imputation of remaining missing values
+#' PCA displaying data that has undergone: 
+#' * missing value filtering 
+#' * imputation of remaining missing values 
 #' * calculation of response ratios (target analyte peak area/internal standard peak area) 
-#' * principal component filtration
+#' * principal component filtration 
 #' * signal drift/batch correction using statTarget package
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
