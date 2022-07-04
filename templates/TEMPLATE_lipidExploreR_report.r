@@ -155,11 +155,11 @@ knitr::kable(master_list$summary_tables$batch_correction_overview)
 #' #### Run order plot
 #' Plot of run order vs principle components
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$pc_filter$PC1
+master_list$pc_run_plot$post_statTarget$PC1$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$pc_filter$PC2
+master_list$pc_run_plot$post_statTarget$PC2$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$pc_filter$PC3
+master_list$pc_run_plot$post_statTarget$PC3$plotly
 #'
 #' ***
 #' 
