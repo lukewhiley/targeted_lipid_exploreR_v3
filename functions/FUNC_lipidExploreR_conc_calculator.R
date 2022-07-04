@@ -29,6 +29,9 @@ FUNC_list$out <- FUNC_data %>%
         filter(precursor_name == idx_lipid) %>%
         select(note) %>% paste0()
       
+      SIL_idx <- which(names(FUNC_data) == SIL_used)
+      
+      if(length(SIL_idx) == 1){
       #find SIL concentration factor from template
       SIL_concentration_factor <- FUNC_conc_guide %>%
         filter(sil_name == all_of(SIL_used)) %>%
@@ -50,9 +53,9 @@ FUNC_list$out <- FUNC_data %>%
                     rename_with(~all_of(idx_lipid), "ratio"),
                   by= "sample_name"
         )
+      }
     }
 
 FUNC_list$out
-
-  }
+}
   

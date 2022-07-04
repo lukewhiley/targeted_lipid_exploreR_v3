@@ -43,7 +43,8 @@ subplot(master_list$pca_output$data_sorted$sample_qc$plot_scores, master_list$pc
 knitr::kable(master_list$summary_lists$missing_value_filter$failed_sil)s
 #'
 #'
-#'The following internal standards failed the missing value filter and were removed from the project:
+#' The following internal standards failed the missing value filter and were removed from the project. 
+#' Note - metabolite targets that use these internal standards for calculation of response ratio and concentrations are also removed.
 #'
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 knitr::kable(master_list$summary_lists$missing_value_filter$feature_fail_list)
