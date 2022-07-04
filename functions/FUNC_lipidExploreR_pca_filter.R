@@ -128,7 +128,7 @@ lgw_pca_filter <- function(FUNC_data,
   pca_colour[[idx_PC]]$pca_colour[pca_output[[idx_PC]]$sample_fail_idx %>% unique()] <- "sample fail"
   pca_colour[[idx_PC]]$pca_colour[pca_output[[idx_PC]]$qc_fail_idx %>% unique()] <- "qc fail"
   pca_plot_colour <- pca_colour[[idx_PC]]$pca_colour
-  pca_plot_colour[is.na(pca_plot_colour)] <- "none"
+  #pca_plot_colour[is.na(pca_plot_colour)] <- "none"
   
   #set colours
   plot_colours <- c(FUNC_project_colours, "red", "orange")
