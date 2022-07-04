@@ -2,7 +2,7 @@
 dlg_message("Welcome to skylineR! :-)", type = 'ok')
 
 #set up project master list
-master_list <- list(); master_list$environment <- list(); master_list$scripts <- list(); master_list$project_details <- list(); master_list$functions <- list();  master_list$mrm_guides <- list(); master_list$data <- list(); master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list()
+master_list <- list(); master_list$environment <- list(); master_list$scripts <- list(); master_list$templates <- list(); master_list$project_details <- list(); master_list$functions <- list();  master_list$mrm_guides <- list(); master_list$data <- list(); master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list()
 
 #store environment details
 master_list$environment$r_version <- sessionInfo()$R.version$version.string
