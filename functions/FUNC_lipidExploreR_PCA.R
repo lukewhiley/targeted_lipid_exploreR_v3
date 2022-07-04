@@ -155,7 +155,7 @@ lgw_pca <- function(FUNC_data,
                              x = ~PC1, 
                              y = ~PC2, 
                              text = ~variable, 
-                             color = "Metabolite", 
+                             #color = "Metabolite", 
                              marker = list(size = 10, color = '#808080', opacity = 0.5,
                                            line = list(color = '#000000', width = 1)
                              )) %>% 
