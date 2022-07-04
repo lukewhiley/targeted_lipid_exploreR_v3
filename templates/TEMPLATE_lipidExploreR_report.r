@@ -40,14 +40,14 @@ subplot(master_list$pca_output$data_sorted$sample_qc$plot_scores, master_list$pc
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-knitr::kable(master_list$summary_lists$missing_value_filter$failed_sil)s
+knitr::kable(master_list$summary_tables$missing_value_filter_summary)
 #'
 #'
 #' The following internal standards failed the missing value filter and were removed from the project. 
 #' Note - metabolite targets that use these internal standards for calculation of response ratio and concentrations are also removed.
 #'
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-knitr::kable(master_list$summary_lists$missing_value_filter$feature_fail_list)
+knitr::kable(master_list$summary_lists$missing_value_filter$failed_SIL %>% as_tibble() %>% rename(internal_standard = value))
 #' 
 #' ***
 #' 
@@ -83,7 +83,7 @@ knitr::kable(master_list$summary_tables$impute_table)
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-knitr::kable(master_list$summary_tables$missing_value_filter_summary_2)
+knitr::kable(master_list$summary_tables$concentration_summary)
 #' 
 #' 
 #' ***
@@ -114,15 +114,15 @@ subplot(master_list$pca_output$concentration$sample_qc$plot_scores, master_list$
 knitr::kable(master_list$summary_tables$pc_filter_summary)
 #'
 #' ***
-#' #### PCA filter plot: Run order vs PCx score
+#' #### PCA filter plot: Run order vs PC score
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_filter_plots$PC1
+master_list$pc_run_plot$pc_filter$PC1
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_filter_plots$PC2
+master_list$pc_run_plot$pc_filter$PC2
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_filter_plots$PC3
+master_list$pc_run_plot$pc_filter$PC3
 #'
 #' ***
 #' 
@@ -147,19 +147,19 @@ subplot(master_list$pca_output$pc_filter$sample_qc$plot_scores, master_list$pca_
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-knitr::kable(master_list$summary_tables$statTarget_corrected)
+knitr::kable(master_list$summary_tables$batch_correction_overview)
 #' 
 #'
-#' #' ***
+#' ***
 #' 
 #' #### Run order plot
 #' Plot of run order vs principle components
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$PC1$plotly
+master_list$pc_run_plot$pc_filter$PC1
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$PC2$plotly
+master_list$pc_run_plot$pc_filter$PC2
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$PC3$plotly
+master_list$pc_run_plot$pc_filter$PC3
 #'
 #' ***
 #' 
@@ -187,6 +187,7 @@ print(master_list$environment$base_packages)
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 print(master_list$environment$user_packages)
 #' ***
+
 
 
 
