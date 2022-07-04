@@ -1,3 +1,7 @@
+
+# PROCESS: Welcome section and project set up --------------------------------------
+
+
 #welcome messages
 dlg_message("Welcome to lipid qc exploreR! :-)", type = 'ok'); dlg_message("Please run lipid SkylineR notebook prior to running this notebook", type = 'ok'); dlg_message("Select rda file produced by SkylineR", type = 'ok')
 
@@ -29,10 +33,10 @@ master_list$functions$signal_correct <- source(paste0(master_list$project_detail
 
 #signal/batch correction
 master_list$functions$pc_run_plot <- source(paste0(master_list$project_details$github_master_dir,
-                                                      "/functions/FUNC_lipidExploreR_pc_runorder_plot.R"))
+                                                   "/functions/FUNC_lipidExploreR_pc_runorder_plot.R"))
 
 
-############################################## SECTION 2: transpose data to standard metabolomics structure (features in columns, samples in rows)  
+# PROCESS: transpose data to standard metabolomics structure (features in columns, samples in rows) -------------------------------------- 
 # Chunk also creates a data summary
 #   -> number of samples
 #   -> number of features
@@ -41,94 +45,65 @@ master_list$functions$pc_run_plot <- source(paste0(master_list$project_details$g
 #   -> NAN values
 
 master_list$data$transposed <- list()
-master_list$summary_tables$transposed_summary <- tibble()
+master_list$summary_tables$transposed_summary <- list()
 
-#create array of unique features
-lipid_features <- master_list$data$skyline_reports$report_2$molecule_name %>% unique()
-
-for(idx_plate in master_list$project_details$mzml_plate_list){
+for(idx_data in master_list$project_details$mzml_plate_list){
+  master_list$data$transposed[[idx_data]] <- pivot_wider(
+    data = master_list$data$skyline_reports$report_2 %>%
+      filter(replicate_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_data]]))),
+    id_cols = replicate_name,
+    names_from = molecule_name,
+    values_from = area
+  ) %>%
+    rename(sample_name = replicate_name)
   
-  #create array of unique samples in the list
-  master_list$data$transposed[[idx_plate]] <- 
-    master_list$data$skyline_reports$report_2 %>%
-    filter(replicate_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))) %>%
-    select(replicate_name) %>% 
-    unique() %>% 
-    rename(sample_name = replicate_name) 
+  #make numeric 
+  master_list$data$transposed[[idx_data]][,-1] <-
+    sapply(master_list$data$transposed[[idx_data]][,-1], 
+           as.numeric) %>% 
+    as_tibble()
   
-  for (idx_lipid in lipid_features){
-    master_list$data$transposed[[idx_plate]] <-
-      left_join(master_list$data$transposed[[idx_plate]],
-                master_list$data$skyline_reports$report_2 %>%
-                  filter(replicate_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))) %>%
-                  filter(molecule_name == idx_lipid) %>%
-                  select(replicate_name, area) %>%
-                  rename_with(~all_of(idx_lipid), "area") %>%
-                  rename(sample_name = replicate_name),
-                by = "sample_name")
-    
-    #make numeric 
-    master_list$data$transposed[[idx_plate]][,-1] <-
-      sapply(master_list$data$transposed[[idx_plate]][,-1], 
-             as.numeric) %>% 
-      as_tibble()
-  }
-  
-  
-  
-  #make summary table
-  master_list$summary_tables$transposed_summary <- master_list$summary_tables$transposed_summary %>% rbind(
-    c(idx_plate,
-      nrow(master_list$data$transposed[[idx_plate]]),
-      ncol(master_list$data$transposed[[idx_plate]] %>% 
-             select(-contains("sample")))
+  # TABLE: raw Skyline missing data summary ---------------------------------
+  master_list$summary_tables$transposed_summary <- master_list$summary_tables$transposed_summary %>%   bind_rows(
+    bind_cols(
+      "batch" = idx_data,
+      "total samples" = nrow(master_list$data$transposed[[idx_data]]),
+      "LTR samples" = length(grep("LTR",  master_list$data$transposed[[idx_data]]$sample_name)), #report number of LTRs in dataset
+      "PQC samples" = length(grep("PQC",  master_list$data$transposed[[idx_data]]$sample_name)), #report number of PQC in dataset
+      "conditioning samples" = length(grep("COND", master_list$data$transposed[[idx_data]])), #report number of conditioning runs in dataset
+      "study samples"= nrow(master_list$data$transposed[[idx_data]])-
+        length(grep("LTR", master_list$data$transposed[[idx_data]]$sample_name))- 
+        length(grep("PQC", master_list$data$transposed[[idx_data]]$sample_name))-
+        length(grep("COND", master_list$data$transposed[[idx_data]]$sample_name)), #report number of study samples in dataset
+      "total features" = ncol(master_list$data$transposed[[idx_data]] %>% 
+                                select(-contains("sample"))),
+      "zero values" = length(which(master_list$data$transposed[[idx_data]] %>% select(!contains("sample"))==0)),
+      "NA values" = length(which(is.na(as.matrix(master_list$data$transposed[[idx_data]] %>% select(!contains("sample")))))),
+      "NaN values" = length(which(is.nan(as.matrix(master_list$data$transposed[[idx_data]] %>% select(!contains("sample"))))))
     )
   )
 }
 
-master_list$summary_tables$transposed_summary <- master_list$summary_tables$transposed_summary %>%
-  setNames(
-    c("batch", "total samples", "total metabolite features"))
+master_list$summary_tables$transposed_summary <- rbind(master_list$summary_tables$transposed_summary,
+                                                       c("total project",
+                                                         sum(master_list$summary_tables$transposed_summary$`total samples`),
+                                                         sum(master_list$summary_tables$transposed_summary$`LTR samples`),
+                                                         sum(master_list$summary_tables$transposed_summary$`PQC samples`),
+                                                         sum(master_list$summary_tables$transposed_summary$`conditioning samples`),
+                                                         sum(master_list$summary_tables$transposed_summary$`study samples`),
+                                                         max(master_list$summary_tables$transposed_summary$`total features`),
+                                                         sum(master_list$summary_tables$transposed_summary$`zero values`),
+                                                         sum(master_list$summary_tables$transposed_summary$`NA values`),
+                                                         sum(master_list$summary_tables$transposed_summary$`NaN values`)
+                                                       ))
 
 
-#perform a missing value data check
-master_list$summary_tables$missing_data_check_1 <- list()
-
-temp_missing_data <- NULL
-#run loop and perform check on all batches
-for(idx_data in names(master_list$data$transposed)){
-  temp_missing_data <- temp_missing_data %>% rbind(
-    c(
-      length(grep("LTR", master_list$data$transposed[[idx_data]]$sample_name)), #report number of LTRs in dataset
-      length(grep("PQC", master_list$data$transposed[[idx_data]]$sample_name)), #report number of PQC in dataset
-      length(grep("COND", master_list$data$transposed[[idx_data]]$sample_name)), #report number of conditioning runs in dataset
-      nrow(master_list$data$transposed[[idx_data]])-
-        length(grep("LTR", master_list$data$transposed[[idx_data]]$sample_name))- 
-        length(grep("PQC", master_list$data$transposed[[idx_data]]$sample_name))-
-        length(grep("COND", master_list$data$transposed[[idx_data]]$sample_name)), #report number of study samples in dataset
-      length(which(master_list$data$transposed[[idx_data]] %>% select(!contains("sample"))==0)),
-      length(which(is.na(as.matrix(master_list$data$transposed[[idx_data]] %>% select(!contains("sample")))))),
-      length(which(is.nan(as.matrix(master_list$data$transposed[[idx_data]] %>% select(!contains("sample"))))))
-    )
-  )
-} 
-
-temp_missing_data <- names(master_list$data$transposed) %>% tibble() %>% rename("batch" = ".") %>%
-  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("LTR QC", "PQC QC","Conditioning runs", "study samples", "zero values", "NA values", "NaN values")))
-
-
-master_list$summary_tables$transposed_summary <- left_join(master_list$summary_tables$transposed_summary,
-                                                           temp_missing_data, 
-                                                           by = "batch")
-
-#print final table
-#master_list$summary_tables$transposed_summary
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 
 
-##########################################SECTION: sort run order and add annotation data 
+# PROCESS: Sort by run order and add annotation data -------------------------------
 
 #list for storing concentration data sorted by run order
 master_list$run_orders <- list()
@@ -170,18 +145,11 @@ for (idx_data in names(master_list$data$transposed)){
   
 }
 
-#merge plates into a master list
-master_list$data$sorted_all_plates <- bind_rows(master_list$data$sorted)
-master_list$data$sorted_all_plates <- master_list$data$sorted_all_plates %>%
-  add_column(sample_idx = c(1:nrow(master_list$data$sorted_all_plates)), .before = "sample_name")
-
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 
 
-
-#########################SECTION 
-### PCA: Raw skyline imports
+# PCA: raw Skyline imports ------------------------------------------------
 
 #create empty list for results
 master_list$pca_output$data_sorted <- list()
@@ -190,8 +158,8 @@ master_list$pca_output$data_sorted$plate <- list()
 
 #run pca loop color by QC/sample
 master_list$pca_output$data_sorted$sample_qc <- master_list$functions$pca$value(
-  FUNC_data = master_list$data$sorted_all_plates,
-  FUNC_metabolite_list = master_list$data$sorted_all_plates %>%
+  FUNC_data =  master_list$data$sorted %>% bind_rows(),
+  FUNC_metabolite_list =  master_list$data$sorted %>% bind_rows() %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_type_factor",
   FUNC_plot_label = "sample_name", 
@@ -205,8 +173,8 @@ master_list$pca_output$data_sorted$sample_qc <- master_list$functions$pca$value(
 
 #run pca loop color by plate
 master_list$pca_output$data_sorted$plate <- master_list$functions$pca$value(
-  FUNC_data = master_list$data$sorted_all_plates,
-  FUNC_metabolite_list = master_list$data$sorted_all_plates %>%
+  FUNC_data =  master_list$data$sorted %>% bind_rows(),
+  FUNC_metabolite_list =  master_list$data$sorted %>% bind_rows() %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_plate_id",
   FUNC_plot_label = "sample_name", 
@@ -221,74 +189,141 @@ master_list$pca_output$data_sorted$plate <- master_list$functions$pca$value(
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 
-#########SECTION
-### Process step: Data filtering
-#### Missing value filter: 
+
+
+
+# PROCESS: data filter: missing values filter by flags --------------------
+
 # * Step 1: Remove all samples that have > 50% missing values (removes any mis-injections etc that may be present in the data)
 # * Step 2: Remove all metabolite features that have > 50% missing values (zero, NA, NaN etc)
-
 
 #create empty lists for storing outputs
 master_list$data$missing_value_filter <- list()
 master_list$summary_lists$missing_value_filter <- list()
-master_list$summary_tables$missing_value_filter_summary <- tibble()
+master_list$summary_lists$missing_value_filter$failed_SIL <- NULL
+master_list$summary_tables$missing_value_filter_summary <- list()
 
-master_list$summary_lists$missing_value_filter$sample_fail_list <- NULL
-master_list$summary_lists$missing_value_filter$feature_fail_list <- NULL
 
-for(idx_sample_type in c("sample", "qc")){
-  master_list$summary_lists$missing_value_filter[[idx_sample_type]] <- list()
-  #run missing value filter function
-  master_list$summary_lists$missing_value_filter[[idx_sample_type]] <- master_list$functions$miss_value_filter$value(
-    FUNC_data = master_list$data$sorted_all_plates %>%
-      filter(sample_type == idx_sample_type),
-    FUNC_metabolite_list = master_list$data$sorted_all_plates %>%
-      select(!contains("sample")) %>% names(),
-    FUNC_IS_tag = "SIL",
-    FUNC_OPTION_missing_value_threshold_sample = 0.50, #decimal % of missing value thrreshild before sample is removed from dataset
-    FUNC_OPTION_missing_value_threshold_feature = 0.50, #decimal % of missing value threshild before feature is removed from dataset
-    FUNC_OPTION_intensity_threshold = 5000)
+for(idx_data in names(master_list$data$sorted)){
+  master_list$summary_lists$missing_value_filter[[idx_data]] <- list()
+  #master_list$summary_lists$missing_value_filter[[idx_data]]$sample_fail_list <- list()
+  #master_list$summary_lists$missing_value_filter[[idx_data]]$feature_fail_list <- list()
+  
+  
+  for(idx_sample_type in c("sample", "qc")){
+    master_list$summary_lists$missing_value_filter[[idx_data]][[idx_sample_type]] <- list()
+    
+    
+    #run missing value filter function
+    
+    master_list$summary_lists$missing_value_filter[[idx_data]][[idx_sample_type]] <- master_list$functions$miss_value_filter$value(
+      FUNC_data = master_list$data$sorted[[idx_data]] %>%
+        filter(sample_type == idx_sample_type),
+      FUNC_metabolite_list = master_list$data$sorted[[idx_data]] %>%
+        select(!contains("sample")) %>% names(),
+      FUNC_IS_tag = "SIL",
+      FUNC_OPTION_missing_value_threshold_sample = 0.50, #decimal % of missing value threshold before sample is removed from dataset
+      FUNC_OPTION_missing_value_threshold_feature = 0.50, #decimal % of missing value threshold before feature is removed from dataset
+      FUNC_OPTION_intensity_threshold = 5000)
+    
+  }
   
   #bind fail sample list
-  master_list$summary_lists$missing_value_filter$sample_fail_list <- c(
-    master_list$summary_lists$missing_value_filter$sample_fail_list,
-    master_list$summary_lists$missing_value_filter[[idx_sample_type]]$mv_samples_fail) %>%
+  master_list$summary_lists$missing_value_filter[[idx_data]]$sample_fail_list <- c(
+    master_list$summary_lists$missing_value_filter[[idx_data]]$sample$mv_samples_fail,
+    master_list$summary_lists$missing_value_filter[[idx_data]]$qc$mv_samples_fail) %>%
     unique()
   
-  #bind fail featire list
-  master_list$summary_lists$missing_value_filter$feature_fail_list <- c(
-    master_list$summary_lists$missing_value_filter$feature_fail_list,
-    master_list$summary_lists$missing_value_filter[[idx_sample_type]]$mv_features_fail) %>%
+  #bind fail feature list
+  master_list$summary_lists$missing_value_filter[[idx_data]]$feature_fail_list <- c(
+    master_list$summary_lists$missing_value_filter[[idx_data]]$sample$mv_features_fail,
+    master_list$summary_lists$missing_value_filter[[idx_data]]$qc$mv_features_fail) %>%
     unique()
+  
+  #create filtered dataset per plate for next phase
+  master_list$data$missing_value_filter[[idx_data]] <- master_list$data$sorted[[idx_data]] %>%
+    filter(!sample_name %in% master_list$summary_lists$missing_value_filter[[idx_data]]$sample_fail_list) %>% #select only pass samples
+    select(-all_of(master_list$summary_lists$missing_value_filter[[idx_data]]$feature_fail_list)) #select only pass features
+  
+  
+  
+  
+  # TABLE: summary table of missing value filter ----------------------------
+  
+  master_list$summary_tables$missing_value_filter_summary <- master_list$summary_tables$missing_value_filter_summary %>%
+    bind_rows(
+      bind_cols("batch" = idx_data,
+                "samples pre-filter" = master_list$data$sorted[[idx_data]] %>% nrow(),
+                "samples post-filter" = master_list$data$missing_value_filter[[idx_data]] %>% nrow(),
+                "samples removed" = master_list$data$sorted[[idx_data]] %>% nrow() -
+                  master_list$data$missing_value_filter[[idx_data]] %>% nrow(),
+                "qc samples remaining" = master_list$data$missing_value_filter[[idx_data]] %>% filter(grepl('qc', sample_type)) %>% nrow(), #report number of QCs remaining in dataset
+                "study samples remaining" = master_list$data$missing_value_filter[[idx_data]] %>% filter(grepl('sample', sample_type)) %>% nrow(), #report number of samples in dataset
+                "features pre-filter" = master_list$data$sorted[[idx_data]] %>% select(-contains("sample")) %>% select(-contains("SIL")) %>% ncol(),
+                "features post-filter" = master_list$data$missing_value_filter[[idx_data]] %>% select(-contains("sample"))  %>% select(-contains("SIL")) %>% ncol(),
+                "features removed" = master_list$data$sorted[[idx_data]] %>% select(-contains("sample"))  %>% select(-contains("SIL")) %>% ncol() -
+                  master_list$data$missing_value_filter[[idx_data]] %>% select(-contains("sample")) %>% select(-contains("SIL")) %>% ncol(),
+                "internal standards pre-filter" = master_list$data$sorted[[idx_data]] %>% select(contains("SIL")) %>% ncol(),
+                "internal standards post-filter" = master_list$data$missing_value_filter[[idx_data]]  %>% select(contains("SIL")) %>% ncol(),
+                "internal standards removed" = master_list$data$sorted[[idx_data]]  %>% select(contains("SIL")) %>% ncol() -
+                  master_list$data$missing_value_filter[[idx_data]] %>% select(contains("SIL")) %>% ncol(),
+                "zero values remaining" = length(which(master_list$data$missing_value_filter[[idx_data]] %>% select(!contains("sample"))==0)), #find 0 values
+                "NA values remaining" = length(which(is.na(as.matrix(master_list$data$missing_value_filter[[idx_data]] %>% select(!contains("sample")))))), #find NAs
+                "NaN values remaining" = length(which(is.nan(as.matrix(master_list$data$missing_value_filter[[idx_data]] %>% select(!contains("sample")))))) # find NANs
+      ))
+  
+  #create list of SIL that fail
+  master_list$summary_lists$missing_value_filter$failed_SIL <- c(master_list$summary_lists$missing_value_filter$failed_SIL, 
+                                                                 master_list$summary_lists$missing_value_filter[[idx_data]]$feature_fail_list[grep("SIL", master_list$summary_lists$missing_value_filter[[idx_data]]$feature_fail_list)]) %>%
+    unique()
+  
 }
 
-#select only pass samples
-master_list$data$missing_value_filter <- master_list$data$sorted_all_plates %>%
-  filter(!sample_name %in% master_list$summary_lists$missing_value_filter$sample_fail_list) %>%
-  #select only pass features
-  select(-all_of(master_list$summary_lists$missing_value_filter$feature_fail_list))
-#   
-#   
-master_list$summary_tables$missing_value_filter_summary <-  master_list$summary_tables$missing_value_filter_summary %>%
-  bind_rows(
-    bind_cols("batch" = master_list$project_details$project_name,
-              "samples pre-filter" = master_list$data$sorted_all_plates %>% nrow(),
-              "samples post-filter" = master_list$data$missing_value_filter %>% nrow(),
-              "samples removed" = master_list$data$sorted_all_plates %>% nrow() -
-                master_list$data$missing_value_filter %>% nrow(),
-              "features pre-filter" = master_list$data$sorted_all_plates %>% select(-contains("sample")) %>% ncol(),
-              "features post-filter" = master_list$data$missing_value_filter %>% select(-contains("sample")) %>% ncol(),
-              "features removed" = master_list$data$sorted_all_plates %>% select(-contains("sample")) %>% ncol() -
-                master_list$data$missing_value_filter %>% select(-contains("sample")) %>% ncol()
-    ))
+master_list$summary_tables$missing_value_filter_summary <- rbind(master_list$summary_tables$missing_value_filter_summary ,
+                                                                 c("total project",
+                                                                   sum(master_list$summary_tables$missing_value_filter_summary$`samples pre-filter`),
+                                                                   sum(master_list$summary_tables$missing_value_filter_summary$`samples post-filter`),
+                                                                   sum(master_list$summary_tables$missing_value_filter_summary$`samples removed`),
+                                                                   sum(master_list$summary_tables$missing_value_filter_summary$`qc samples remaining`),
+                                                                   sum(master_list$summary_tables$missing_value_filter_summary$`study samples remaining`),
+                                                                   max(master_list$summary_tables$missing_value_filter_summary$`features pre-filter`),
+                                                                   min(master_list$summary_tables$missing_value_filter_summary$`features post-filter`),
+                                                                   max(master_list$summary_tables$missing_value_filter_summary$`features removed`),
+                                                                   max(master_list$summary_tables$missing_value_filter_summary$`internal standards pre-filter`),
+                                                                   min(master_list$summary_tables$missing_value_filter_summary$`internal standards post-filter`),
+                                                                   max(master_list$summary_tables$missing_value_filter_summary$`internal standards removed`),
+                                                                   sum(master_list$summary_tables$missing_value_filter_summary$`zero values remaining`),
+                                                                   sum(master_list$summary_tables$missing_value_filter_summary$`NA values remaining`),
+                                                                   sum(master_list$summary_tables$missing_value_filter_summary$`NaN values remaining`)))
 
-###### PCA OF RESULTS OF MISSING VALUE FILTER
+
+
+
+# PROCESS: select data features that are common for all plates ------------
+
+master_list$data$common_metabolite_filter <- list()
+
+#step1: find common features
+temp_common_features <- names(master_list$data$missing_value_filter[[1]])
+for(idx_data in names(master_list$data$missing_value_filter)){
+  temp_common_features <- intersect(temp_common_features,
+                                    names(master_list$data$missing_value_filter[[idx_data]]))
+}
+
+for(idx_data in names(master_list$data$missing_value_filter)){
+  master_list$data$common_metabolite_filter[[idx_data]] <- master_list$data$missing_value_filter[[idx_data]] %>%
+    select(all_of(temp_common_features))
+}
+
+
+# PCA: post-missing value filter ------------------------------------------
+
 #create empty list for results
 master_list$pca_output$missing_value_filter <- list()
 #run pca loop color by QC/sample
 master_list$pca_output$missing_value_filter$sample_qc <- master_list$functions$pca$value(
-  FUNC_data = master_list$data$missing_value_filter,
-  FUNC_metabolite_list = master_list$data$missing_value_filter %>%
+  FUNC_data = master_list$data$common_metabolite_filter %>% bind_rows(),
+  FUNC_metabolite_list = master_list$data$common_metabolite_filter %>% bind_rows() %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_type_factor",
   FUNC_plot_label = "sample_name", 
@@ -300,10 +335,11 @@ master_list$pca_output$missing_value_filter$sample_qc <- master_list$functions$p
   FUNC_option_plot_qc = TRUE
 )
 
+
 #run pca loop color by plate
 master_list$pca_output$missing_value_filter$plate <- master_list$functions$pca$value(
-  FUNC_data = master_list$data$missing_value_filter,
-  FUNC_metabolite_list = master_list$data$missing_value_filter %>%
+  FUNC_data = master_list$data$common_metabolite_filter %>% bind_rows(),
+  FUNC_metabolite_list = master_list$data$common_metabolite_filter %>% bind_rows() %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_plate_id",
   FUNC_plot_label = "sample_name", 
@@ -315,76 +351,117 @@ master_list$pca_output$missing_value_filter$plate <- master_list$functions$pca$v
   FUNC_option_plot_qc = TRUE
 )
 
-##############  SECTION   - Process step: Imputation
+
+
+
+# PROCESS: imputation of remaining missing values -----------------------------------------------------
+
 #Imputation of the remaining zero value and missing data 
 #Imputation is completed using x/2, where x is minimum intensity of that feature in the batch
 
 master_list$data$impute <- list()
-master_list$summary_tables$impute_table <- tibble()
+master_list$summary_tables$impute_table <- list()
 
-master_list$data$impute <- master_list$functions$impute_data$value(
-  FUNC_data = master_list$data$missing_value_filter,
-  FUNC_metabolite_list = master_list$data$missing_value_filter %>% 
-    select(-contains("sample")) %>% names(),
-  FUNC_option_impute_missing_data = TRUE)
+for(idx_data in names(master_list$data$common_metabolite_filter)){
+  master_list$data$impute[[idx_data]] <- master_list$functions$impute_data$value(
+    FUNC_data = master_list$data$common_metabolite_filter[[idx_data]],
+    FUNC_metabolite_list = master_list$data$common_metabolite_filter[[idx_data]] %>% 
+      select(-contains("sample")) %>% names(),
+    FUNC_option_impute_missing_data = TRUE)
+  
+  # TABLE: summary table of imputed data ----------------------------
+  
+  master_list$summary_tables$impute_table <- master_list$summary_tables$impute_table %>%
+    bind_rows(
+      bind_cols("batch" = idx_data,
+                "zero vaules pre-imputation" = length(which(master_list$data$common_metabolite_filter[[idx_data]] %>% select(!contains("sample"))==0)),
+                "NA values pre-imputation" = length(which(is.na(as.matrix(master_list$data$common_metabolite_filter[[idx_data]] %>% select(!contains("sample")))))),
+                "NaN values pre-imputation" = length(which(is.nan(as.matrix(master_list$data$common_metabolite_filter[[idx_data]] %>% select(!contains("sample")))))), # find NANs
+                "zero vaules post-imputation" = length(which(master_list$data$impute[[idx_data]] %>% select(!contains("sample"))==0)),
+                "NA values post-imputation" = length(which(is.na(as.matrix(master_list$data$impute[[idx_data]] %>% select(!contains("sample")))))),
+                "NaN values post-imputation" = length(which(is.nan(as.matrix(master_list$data$impute[[idx_data]] %>% select(!contains("sample")))))), 
+                
+      ))
+}
 
-#create summary tibble
-master_list$summary_tables$impute_table <-  master_list$summary_tables$impute_table %>%
-  bind_rows(
-    bind_cols("batch" = master_list$project_details$project_name,
-              "missing values pre-imputation" = c(which(master_list$data$missing_value_filter %>% select(-contains("sample")) == 0),
-                                                  which(is.na(master_list$data$missing_value_filter %>% select(-contains("sample"))))) %>% length(),
-              "missing values post-filter" = c(which(master_list$data$impute %>% select(-contains("sample")) == 0),
-                                               which(is.na(master_list$data$impute %>% select(-contains("sample"))))) %>% length(),
-              "data_points imputed" = c(which(master_list$data$missing_value_filter %>% select(-contains("sample")) == 0),
-                                        which(is.na(master_list$data$missing_value_filter %>% select(-contains("sample"))))) %>% length() - 
-                which(master_list$data$impute %>% select(-contains("sample")) == 0) %>% length()
-    ))
+master_list$summary_tables$impute_table <- rbind(master_list$summary_tables$impute_table ,
+                                                 c("total project",
+                                                   sum(master_list$summary_tables$impute_table$`zero vaules pre-imputation`),
+                                                   sum(master_list$summary_tables$impute_table$`NA values pre-imputation`),
+                                                   sum(master_list$summary_tables$impute_table$`NaN values pre-imputation`),
+                                                   sum(master_list$summary_tables$impute_table$`zero vaules post-imputation`),
+                                                   sum(master_list$summary_tables$impute_table$`NA values post-imputation`),
+                                                   sum(master_list$summary_tables$impute_table$`NaN values post-imputation`)
+                                                 ))
 
 
-##############  SECTION - Process step: Response ratio and concentration value 
-##### Two step process:
+
+# PROCESS: Response  ratio and concentration value  ------------------------------------------------------
 #* Calculation of target metabolite/stable isotope labelled (SIL) internal standard ratio, using predefined target metabolite/internal standard pairs
 #* Conversion of response ratio to concentration values using single point calibration
 
+
 #set empty list to store output data
 master_list$data$concentration <- list()
-temp_missing_data <- NULL
+master_list$summary_tables$concentration_summary <- list()
+master_list$templates <- list()
+master_list$templates$SIL_guide <- read_csv(
+  file = "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template.csv",
+  show_col_types = FALSE) %>%
+  clean_names()
+master_list$templates$conc_guide <- read_csv(
+  file = "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_SIL_batch_103.csv", 
+  show_col_types = FALSE) %>% 
+  clean_names()
 
-master_list$data$concentration <- master_list$functions$conc_calc$value(
-  FUNC_data = master_list$data$impute,
-  FUNC_metabolite_list = master_list$data$impute %>% 
-    select(!contains("sample")) %>% names(),
-  FUNC_SIL_guide_path =  "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template.csv",
-  FUNC_conc_guide_path = "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_SIL_batch_103.csv")
+for(idx_data in names(master_list$data$impute)){
+  master_list$data$concentration[[idx_data]] <- master_list$functions$conc_calc$value(
+    FUNC_data = master_list$data$impute[[idx_data]],
+    FUNC_metabolite_list = master_list$data$impute[[idx_data]] %>% 
+      select(!contains("sample")) %>% names(),
+    FUNC_SIL_guide = master_list$templates$SIL_guide,
+    FUNC_conc_guide = master_list$templates$conc_guide)
+  
+  # TABLE: summary table of data following response ratio and concentration calculation ----------------------------
+  
+  master_list$summary_tables$concentration_summary <- master_list$summary_tables$concentration_summary %>%
+    bind_rows(
+      bind_cols("batch" = idx_data,
+                "total samples" = master_list$data$concentration[[idx_data]] %>% nrow(),
+                "qc samples" = master_list$data$concentration[[idx_data]] %>% filter(grepl('qc', sample_type)) %>% nrow(), #report number of QCs remaining in dataset
+                "study samples" = master_list$data$concentration[[idx_data]] %>% filter(grepl('sample', sample_type)) %>% nrow(), #report number of samples in dataset
+                "features" = master_list$data$concentration[[idx_data]] %>% select(-contains("sample")) %>% select(-contains("SIL")) %>% ncol(),
+                "zero values remaining" = length(which(master_list$data$concentration[[idx_data]] %>% select(!contains("sample"))==0)), #find 0 values
+                "NA values remaining" = length(which(is.na(as.matrix(master_list$data$concentration[[idx_data]] %>% select(!contains("sample")))))), #find NAs
+                "NaN values remaining" = length(which(is.nan(as.matrix(master_list$data$concentration[[idx_data]] %>% select(!contains("sample")))))) # find NANs
+      ))
+  
+}
 
+master_list$summary_tables$concentration_summary <- rbind(master_list$summary_tables$concentration_summary,
+                                                          c("total project",
+                                                            sum(master_list$summary_tables$concentration_summary$`total samples`),
+                                                            sum(master_list$summary_tables$concentration_summary$`qc samples`),
+                                                            sum(master_list$summary_tables$concentration_summary$`study samples`),
+                                                            max(master_list$summary_tables$concentration_summary$features),
+                                                            sum(master_list$summary_tables$concentration_summary$`zero values remaining`),
+                                                            sum(master_list$summary_tables$concentration_summary$`NA values remaining`),
+                                                            sum(master_list$summary_tables$concentration_summary$`NaN values remaining`)
+                                                          ))
 
-#check for missing values and NaNs from the calculation
-temp_missing_data <- temp_missing_data %>% rbind(
-  c(
-    length(which(master_list$data$concentration %>% select(!contains("sample"))==0)),
-    length(which(is.na(as.matrix(master_list$data$concentration %>% select(!contains("sample")))))),
-    length(which(is.nan(as.matrix(master_list$data$concentration %>% select(!contains("sample"))))))
-  )
-)
-
-
-master_list$summary_tables$missing_value_filter_summary_2 <- master_list$project_details$mzml_plate_list %>% tibble() %>% rename("batch" = ".") %>%
-  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values")))
-
-#master_list$summary_tables$missing_value_filter_summary_2
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 
 
-###### PCA OF RESULTS OF CONCENTRATION DATA
+# PCA: response ratio and concentration calculation -----------------------
+
 #create empty list for results
 master_list$pca_output$concentration <- list()
 #run pca loop color by QC/sample
 master_list$pca_output$concentration$sample_qc <- master_list$functions$pca$value(
-  FUNC_data = master_list$data$concentration,
-  FUNC_metabolite_list = master_list$data$concentration %>%
+  FUNC_data = master_list$data$concentration %>% bind_rows(),
+  FUNC_metabolite_list = master_list$data$concentration %>% bind_rows() %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_type_factor",
   FUNC_plot_label = "sample_name", 
@@ -396,10 +473,11 @@ master_list$pca_output$concentration$sample_qc <- master_list$functions$pca$valu
   FUNC_option_plot_qc = TRUE
 )
 
+
 #run pca loop color by plate
 master_list$pca_output$concentration$plate <- master_list$functions$pca$value(
-  FUNC_data = master_list$data$concentration,
-  FUNC_metabolite_list = master_list$data$concentration %>%
+  FUNC_data = master_list$data$concentration %>% bind_rows(),
+  FUNC_metabolite_list = master_list$data$concentration %>% bind_rows() %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_plate_id",
   FUNC_plot_label = "sample_name", 
@@ -412,8 +490,8 @@ master_list$pca_output$concentration$plate <- master_list$functions$pca$value(
 )
 
 
+# PROCESS: sample outlier filter ---------------------------------------------------
 
-##############  SECTION - Process step: Sample outlier filter PER PLATE
 ##### Filter to remove all outlier samples with excessive principal component (PC) variation
 #* Step 1 : Create PCA scores for PC 1:3
 #* Step 2: Find samples with PC score > 1.5 standard deviation of median PC
@@ -423,90 +501,156 @@ master_list$pca_output$concentration$plate <- master_list$functions$pca$value(
 master_list$data$pc_filter <- list()
 master_list$summary_lists$list_pc_filter <- list()
 master_list$pc_filter_plots <- tibble::lst()
-master_list$summary_tables$pc_filter_summary <- tibble() # sample summary post filtering
+master_list$summary_tables$pc_filter_summary <- list() # sample summary post filtering
 
-
-qc_fail = NULL
-sample_fail = NULL
-
-#step 1 - create a sample_type_factor_rev column to reverse plot plotting order so that QCs are plotted on top.
-if(length(which(names(master_list$data$concentration) == "sample_type_factor_rev")) == 0){
-  master_list$data$concentration <- master_list$data$concentration %>%
-    add_column(sample_type_factor_rev =
-                 factor(master_list$data$concentration$sample_type, levels = c("sample", "qc"), ordered = TRUE),
-               .after = "sample_type_factor")
+for(idx_data in names(master_list$data$concentration)){
+  qc_fail = NULL
+  sample_fail = NULL
+  
+  #step 1 - create a sample_type_factor_rev column to reverse plot plotting order so that QCs are plotted on top.
+  if(length(which(names(master_list$data$concentration[[idx_data]]) == "sample_type_factor_rev")) == 0){
+    master_list$data$concentration[[idx_data]] <- master_list$data$concentration[[idx_data]] %>%
+      add_column(sample_type_factor_rev =
+                   factor(master_list$data$concentration[[idx_data]]$sample_type, levels = c("sample", "qc"), ordered = TRUE),
+                 .after = "sample_type_factor")
+  }
+  
+  #run pca loop
+  master_list$summary_lists$list_pc_filter[[idx_data]] <- master_list$functions$pca_filter$value(
+    FUNC_data = master_list$data$concentration[[idx_data]],
+    FUNC_metabolite_list = master_list$data$concentration[[idx_data]] %>%
+      select(-contains("sample")) %>% names(),
+    FUNC_colour_by = "sample_type_factor_rev",
+    FUNC_plot_label = "sample_name", 
+    FUNC_scaling = "UV",
+    FUNC_title = paste0(master_list$project_details$project_name),
+    FUNC_project_colours = c("white", "steelblue2"),
+    FUNC_option_point_size = 3,
+    FUNC_option_invert_y = FALSE,
+    FUNC_option_invert_x = FALSE,
+    FUNC_option_plot_qc = TRUE,
+    FUNC_option_iqr_filter_samples = 2.5,
+    FUNC_option_iqr_filter_qc = 5
+  )
+  
+  
+  #store PC plots
+  master_list$pc_filter_plots[[idx_data]] <- lst(PC1 = master_list$summary_lists$list_pc_filter[[idx_data]]$PC1$plotly,
+                                                 PC2 = master_list$summary_lists$list_pc_filter[[idx_data]]$PC2$plotly,
+                                                 PC3 = master_list$summary_lists$list_pc_filter[[idx_data]]$PC3$plotly)
+  
+  #store list of qc_fail
+  qc_fail <- c(qc_fail, 
+               length(which(grepl("LTR", master_list$summary_lists$list_pc_filter[[idx_data]]$fail_list))))
+  
+  #store list of sample_fail
+  sample_fail <- c(sample_fail, 
+                   length(which(!grepl("LTR", master_list$summary_lists$list_pc_filter[[idx_data]]$fail_list))))
+  
+  #create filtered dataset
+  master_list$data$pc_filter[[idx_data]] <- master_list$data$concentration[[idx_data]] %>%
+    filter(!sample_name %in% master_list$summary_lists$list_pc_filter[[idx_data]]$fail_list)
+  
+  # TABLE: summary table of missing value filter ----------------------------
+  
+  master_list$summary_tables$pc_filter_summary <- master_list$summary_tables$pc_filter_summary %>%
+    bind_rows(
+      bind_cols("batch" = idx_data,
+                "total samples pre-filter" = master_list$data$concentration[[idx_data]] %>% nrow(),
+                "total samples post-filter" = master_list$data$pc_filter[[idx_data]] %>% nrow(),
+                "qc samples removed" = master_list$data$concentration[[idx_data]]  %>% filter(grepl('qc', sample_type)) %>% nrow() -
+                  master_list$data$pc_filter[[idx_data]]  %>% filter(grepl('qc', sample_type)) %>% nrow(),
+                "qc samples remaining" = master_list$data$pc_filter[[idx_data]] %>% filter(grepl('qc', sample_type)) %>% nrow(), #report number of QCs remaining in dataset
+                "study samples removed" = master_list$data$concentration[[idx_data]]  %>% filter(grepl('sample', sample_type)) %>% nrow() -
+                  master_list$data$pc_filter[[idx_data]]  %>% filter(grepl('sample', sample_type)) %>% nrow(), #report number of samples in dataset
+                "study samples remaining" = master_list$data$pc_filter[[idx_data]] %>% filter(grepl('sample', sample_type)) %>% nrow(), #report number of samples in dataset
+                "features remaining" = master_list$data$pc_filter[[idx_data]] %>% select(-contains("sample")) %>% select(-contains("SIL")) %>% ncol(),
+                "zero values remaining" = length(which(master_list$data$pc_filter[[idx_data]] %>% select(!contains("sample"))==0)), #find 0 values
+                "NA values remaining" = length(which(is.na(as.matrix(master_list$data$pc_filter[[idx_data]] %>% select(!contains("sample")))))), #find NAs
+                "NaN values remaining" = length(which(is.nan(as.matrix(master_list$data$pc_filter[[idx_data]] %>% select(!contains("sample")))))) # find NANs
+      ))
 }
 
-#run pca loop
-master_list$summary_lists$list_pc_filter <- master_list$functions$pca_filter$value(
-  FUNC_data = master_list$data$concentration,
-  FUNC_metabolite_list = master_list$data$concentration %>%
-    select(-contains("sample")) %>% names(),
-  FUNC_colour_by = "sample_type_factor_rev",
-  FUNC_plot_label = "sample_name", 
-  FUNC_scaling = "UV",
-  FUNC_title = paste0(master_list$project_details$project_name),
-  FUNC_project_colours = c("white", "steelblue2"),
-  FUNC_option_point_size = 3,
-  FUNC_option_invert_y = FALSE,
-  FUNC_option_invert_x = FALSE,
-  FUNC_option_plot_qc = TRUE,
-  FUNC_option_iqr_filter_samples = 2.5,
-  FUNC_option_iqr_filter_qc = 5
-)
+master_list$summary_tables$pc_filter_summary <- rbind(master_list$summary_tables$pc_filter_summary ,
+                                                      c("total project",
+                                                        sum(master_list$summary_tables$pc_filter_summary$`total samples pre-filter`),
+                                                        sum(master_list$summary_tables$pc_filter_summary$`total samples post-filter`),
+                                                        sum(master_list$summary_tables$pc_filter_summary$`qc samples removed`),
+                                                        sum(master_list$summary_tables$pc_filter_summary$`qc samples remaining`),
+                                                        sum(master_list$summary_tables$pc_filter_summary$`study samples removed`),
+                                                        sum(master_list$summary_tables$pc_filter_summary$`study samples remaining`),
+                                                        max(master_list$summary_tables$pc_filter_summary$`features remaining`),
+                                                        sum(master_list$summary_tables$pc_filter_summary$`zero values remaining`),
+                                                        sum(master_list$summary_tables$pc_filter_summary$`NA values remaining`),
+                                                        sum(master_list$summary_tables$pc_filter_summary$`NaN values remaining`)))
 
-master_list$pc_filter_plots <- lst(PC1 = master_list$summary_lists$list_pc_filter$PC1$plotly,
-                                   PC2 = master_list$summary_lists$list_pc_filter$PC2$plotly,
-                                   PC3 = master_list$summary_lists$list_pc_filter$PC3$plotly)
 
-qc_fail <- c(qc_fail, 
-             length(which(grepl("LTR", master_list$summary_lists$list_pc_filter$fail_list))))
 
-sample_fail <- c(sample_fail, 
-                 length(which(!grepl("LTR", master_list$summary_lists$list_pc_filter$fail_list))))
 
-#create filtered dataset
-master_list$data$pc_filter <- master_list$data$concentration %>%
-  filter(!sample_name %in% master_list$summary_lists$list_pc_filter$fail_list)
+# PLOT: pca filter runorder vs pc -----------------------------------------
+#prepare data 
+master_list$summary_lists$list_pc_filter_plot_data <- list()
+master_list$pc_run_plot <- list()
+master_list$pc_run_plot$pc_filter <- list()
 
-#create summary table
-master_list$summary_tables$pc_filter_summary <- master_list$summary_tables$pc_filter_summary %>% rbind(
-  c(master_list$project_details$project_name,
-    paste0("total project"),
-    nrow(master_list$data$concentration %>% filter(sample_type == "sample")),
-    sample_fail,
-    nrow(master_list$data$concentration %>% filter(sample_type == "qc")),
-    qc_fail
+for(idx_pca in c("PC1", "PC2", "PC3")){
+  master_list$summary_lists$list_pc_filter_plot_data[[idx_pca]] <- list()
+  
+  for(idx_data in names(master_list$summary_lists$list_pc_filter)){
+    master_list$summary_lists$list_pc_filter_plot_data[[idx_pca]] <- bind_rows(master_list$summary_lists$list_pc_filter_plot_data[[idx_pca]],
+                                                                               master_list$summary_lists$list_pc_filter[[idx_data]][[idx_pca]]$plot_Val)
+  }
+  
+  master_list$summary_lists$list_pc_filter_plot_data[[idx_pca]]$sample_idx <- seq(1:length(master_list$summary_lists$list_pc_filter_plot_data[[idx_pca]]$sample_idx))
+  
+  p <- ggplot(data=master_list$summary_lists$list_pc_filter_plot_data[[idx_pca]],
+              aes(x=sample_idx,
+                  y=get(idx_pca)))
+  
+  p <- p + geom_point(aes(fill = plot_colour), shape = 21, size = 3)
+  p <- p + scale_fill_manual(values = c("white", "steelblue2", "red", "orange" ))
+  p <- p + labs(x = paste("Sample order"),
+                y = paste0(idx_pca))
+  p <- p + ggtitle(paste0(idx_pca))
+  p <- p + theme_cowplot() 
+  p <- p + theme(
+    plot.title = element_text(hjust = 0.5, size=14),
+    axis.text.y = element_text(size = 12, margin = margin(t = 0, r = 0, b = 0, l = 2)),
+    axis.text.x = element_blank(),
+    axis.title = element_text(size = 14),
+    legend.title=element_blank(),
+    axis.ticks.x = element_blank()
   )
-)
-
-#add plate info
-for(idx_data in unique(master_list$data$pc_filter$sample_plate_id)){
-  master_list$summary_tables$pc_filter_summary <- master_list$summary_tables$pc_filter_summary %>% rbind(
-    c(master_list$project_details$project_name,
-      idx_data,
-      nrow(master_list$data$concentration %>% filter(sample_plate_id == idx_data) %>% filter(sample_type == "sample")),
-      sample_fail,
-      nrow(master_list$data$concentration %>% filter(sample_plate_id == idx_data) %>% filter(sample_type == "qc")),
-      qc_fail
-    )
-  )
+  #create vertical lines to separate classes on plot
+  plot_batches <- master_list$summary_lists$list_pc_filter_plot_data[[idx_pca]]$sample_plate_id %>% unique()
+  if(length(plot_batches) > 1){
+    batch_idx <- NULL
+    for(idx_batch in plot_batches[2:length(plot_batches)]){
+      batch_idx <- c(batch_idx, min(which(master_list$summary_lists$list_pc_filter_plot_data[[idx_pca]]$sample_plate_id == idx_batch)))
+    }
+    p <- p + geom_vline(xintercept=c(batch_idx),color="grey")
+  }
+  
+  
+  master_list$pc_run_plot$pc_filter[[idx_pca]] <- p %>% ggplotly() %>% layout(legend = list(orientation = "h",   # show entries horizontally
+                                                                                            xanchor = "center",  # use center of legend as anchor
+                                                                                            x = 0.5,
+                                                                                            y = -0.2,
+                                                                                            title=list(text="")))
+  
+  
 }
-
-#set names on summary table
-master_list$summary_tables$pc_filter_summary <- master_list$summary_tables$pc_filter_summary %>%
-  setNames(c("batch","plate", "total samples pre-filter", "failed samples", "total samples post-filter", "failed qc" ))
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 
-###### PCA OF RESULTS OF OUTLIER FILTERED CONCENTRATION DATA
+# PCA: following principal component filter -----------------------
 #create empty list for results
 master_list$pca_output$pc_filter <- list()
 #run pca loop color by QC/sample
 master_list$pca_output$pc_filter$sample_qc <- master_list$functions$pca$value(
-  FUNC_data = master_list$data$pc_filter,
-  FUNC_metabolite_list = master_list$data$pc_filter %>%
+  FUNC_data = master_list$data$pc_filter %>% bind_rows(),
+  FUNC_metabolite_list = master_list$data$pc_filter %>% bind_rows() %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_type_factor",
   FUNC_plot_label = "sample_name", 
@@ -520,8 +664,8 @@ master_list$pca_output$pc_filter$sample_qc <- master_list$functions$pca$value(
 
 #run pca loop color by plate
 master_list$pca_output$pc_filter$plate <- master_list$functions$pca$value(
-  FUNC_data = master_list$data$pc_filter,
-  FUNC_metabolite_list = master_list$data$pc_filter %>%
+  FUNC_data = master_list$data$pc_filter %>% bind_rows(),
+  FUNC_metabolite_list = master_list$data$pc_filter %>% bind_rows() %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_plate_id",
   FUNC_plot_label = "sample_name", 
@@ -533,18 +677,42 @@ master_list$pca_output$pc_filter$plate <- master_list$functions$pca$value(
   FUNC_option_plot_qc = TRUE
 )
 
+# PROCESS: combine dataset and produce summary table ---------------------------------
 
+master_list$data$pc_filter_combined <- master_list$data$pc_filter %>% 
+  bind_rows() %>% 
+  add_column(sample_idx = seq(1:nrow(master_list$data$pc_filter %>% bind_rows())), 
+             .before=1)
 
+# TABLE: Pre-batch correction summary table -------------------------------
 
-##############  SECTION - Process step: Signal drift and batch correct the data (per project)
+prelipid_stDev <- colSds(master_list$data$pc_filter_combined %>% filter(sample_type == "qc") %>% select(!contains("sample")) %>% as.matrix())
+prelipid_means <- colMeans2(master_list$data$pc_filter_combined %>% filter(sample_type == "qc") %>% select(!contains("sample")) %>% as.matrix())
+prelipid_RSD <- (100*prelipid_stDev)/prelipid_means
+
+master_list$summary_tables$batch_correction_overview <- list()
+master_list$summary_tables$batch_correction_overview <- bind_cols(
+  "data" = "pre_batch_correction",
+  "total samples" = nrow(master_list$data$pc_filter_combined),
+  "qc samples" = nrow(master_list$data$pc_filter_combined %>% filter(sample_type == "qc")),
+  "study samples" = nrow(master_list$data$pc_filter_combined %>% filter(sample_type == "sample")),
+  "total features" = ncol(master_list$data$pc_filter_combined %>% select(!contains("sample"))),
+  "features < 30% qcRSD" = length(which(prelipid_RSD < 30)),
+  "features < 20% qcRSD" = length(which(prelipid_RSD < 20)),
+  "features < 10% qcRSD" = length(which(prelipid_RSD < 10)),
+  "zero values" = length(which(master_list$data$pc_filter_combined %>% select(!contains("sample"))==0)),
+  "NA values remaining" = length(which(is.na(as.matrix(master_list$data$pc_filter_combined %>% select(!contains("sample")))))), #find NAs
+  "NaN values remaining" = length(which(is.nan(as.matrix(master_list$data$pc_filter_combined %>% select(!contains("sample"))))))#find 0 values
+)
+
+# PROCESS: signal drift and batch correct ---------------------------------
+
 #* Data from each individual batch undergoes signal drift correction using statTarget package (https://stattarget.github.io/)
 #* This is performed within individual batches at this point to evaluate the performance of each batch
-
-
+#* 
 #list for storing signal drift corrected data (per project)
 master_list$data$statTarget_corrected <- list()
-master_list$summary_tables$statTarget_corrected <- tibble()
-temp_missing_data <- NULL
+master_list$summary_tables$statTarget_corrected <- list()
 
 #create batch correction directory
 if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/batch_correction"))){
@@ -554,9 +722,9 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/batch_corr
 #run batch correction PER PROJECT 
 master_list$data$statTarget_corrected <- master_list$functions$signal_correct$value(
   FUNC_project_directory = paste0(master_list$project_details$project_dir,
-                                  "/data/batch_correction/"),
-  FUNC_data = master_list$data$pc_filter,
-  FUNC_metabolite_list = master_list$data$pc_filter %>%
+                                  "/data/batch_correction"),
+  FUNC_data = master_list$data$pc_filter_combined,
+  FUNC_metabolite_list = master_list$data$pc_filter_combined %>%
     select(-contains("sample")) %>% names(),
   FUNC_header_sample_id = "sample_name",
   FUNC_header_batch = "sample_plate_id",
@@ -566,47 +734,34 @@ master_list$data$statTarget_corrected <- master_list$functions$signal_correct$va
   FUNC_option_coCV = 30
 )
 
-#produce summary table
-master_list$summary_tables$statTarget_corrected <- master_list$summary_tables$statTarget_corrected %>%
-  rbind(c(
-    master_list$project_details$project_name,
-    nrow(master_list$data$statTarget_corrected),
-    nrow(master_list$data$statTarget_corrected %>% 
-           filter(sample_type == "qc")),
-    nrow(master_list$data$statTarget_corrected %>% 
-           filter(sample_type == "sample")),
-    ncol(master_list$data$statTarget_corrected %>% 
-           select(-contains("sample")))
-  ))
+# TABLE: Post-batch correction summary table -------------------------------
 
-#missing data check
-temp_missing_data <- temp_missing_data %>% rbind(
-  c(
-    length(which(master_list$data$statTarget_corrected %>% select(!contains("sample"))==0)),
-    length(which(is.na(as.matrix(master_list$data$statTarget_corrected %>% select(!contains("sample")))))),
-    length(which(is.nan(as.matrix(master_list$data$statTarget_corrected %>% select(!contains("sample"))))))
-  )
-)
+postlipid_stDev <- colSds(master_list$data$statTarget_corrected %>% filter(sample_type == "qc") %>% select(!contains("sample")) %>% as.matrix())
+postlipid_means <- colMeans2(master_list$data$statTarget_corrected %>% filter(sample_type == "qc") %>% select(!contains("sample")) %>% as.matrix())
+postlipid_RSD <- (100*postlipid_stDev)/postlipid_means
 
+master_list$summary_tables$batch_correction_overview <- bind_rows(master_list$summary_tables$batch_correction_overview,
+                                                                  bind_cols(
+                                                                    "data" = "post_batch_correction",
+                                                                    "total samples" = nrow(master_list$data$statTarget_corrected),
+                                                                    "qc samples" = nrow(master_list$data$statTarget_corrected %>% filter(sample_type == "qc")),
+                                                                    "study samples" = nrow(master_list$data$statTarget_corrected %>% filter(sample_type == "sample")),
+                                                                    "total features" = ncol(master_list$data$statTarget_corrected %>% select(!contains("sample"))),
+                                                                    "features < 30% qcRSD" = length(which(postlipid_RSD < 30)),
+                                                                    "features < 20% qcRSD" = length(which(postlipid_RSD < 20)),
+                                                                    "features < 10% qcRSD" = length(which(postlipid_RSD < 10)),
+                                                                    "zero values" = length(which(master_list$data$statTarget_corrected %>% select(!contains("sample"))==0)),
+                                                                    "NA values remaining" = length(which(is.na(as.matrix(master_list$data$statTarget_corrected %>% select(!contains("sample")))))), #find NAs
+                                                                    "NaN values remaining" = length(which(is.nan(as.matrix(master_list$data$statTarget_corrected %>% select(!contains("sample"))))))#find 0 values
+                                                                  ))
 
-master_list$summary_tables$missing_data_check_4 <- names(master_list$data$statTarget_corrected) %>% tibble() %>% rename("batch" = ".") %>%
-  cbind(temp_missing_data %>% as_tibble() %>% setNames(c("zero values", "NA values", "NaN values")))
-
-master_list$summary_tables$statTarget_corrected <- master_list$summary_tables$statTarget_corrected %>%
-  setNames(
-    c("batch",
-      "total samples",
-      "qc",
-      "study samples",
-      "total metabolites <30% RSD in qc")
-  ) %>%  left_join(master_list$summary_tables$missing_data_check_4,
-                   by = "batch")
 
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 
 
-###### PCA OF RESULTS OF OUTLIER FILTERED CONCENTRATION DATA
+# PCA: statTarget corrected data ------------------------------------------
+
 #create empty list for results
 master_list$pca_output$statTarget_corrected <- list()
 #run pca loop color by QC/sample
@@ -641,23 +796,25 @@ master_list$pca_output$statTarget_corrected$plate <- master_list$functions$pca$v
 
 
 
+# PLOT: run order vs pc variation ----------------------------------------------------------
 
-############# FINAL SAVE OF DATA
+master_list$pc_run_plot$pre_statTarget <- list()
+master_list$pc_run_plot$pre_statTarget <- master_list$functions$pc_run_plot$value(
+  FUNC_data = master_list$data$pc_filter_combined,
+  FUNC_metabolite_list = master_list$data$pc_filter_combined %>%
+    select(-contains("sample")) %>% names(),
+  FUNC_colour_by = "sample_type_factor_rev",
+  FUNC_plot_label = "sample_name",
+  FUNC_scaling = "UV",
+  FUNC_title = paste0(master_list$project_details$project_name),
+  FUNC_project_colours = c("white", "steelblue2"),
+  FUNC_option_point_size = 3,
+  FUNC_option_plot_qc = TRUE
+)
 
-## save and load as appropriate
-save(master_list,
-     file = paste0(
-       master_list$project_details$project_dir,
-       "/data/rda/", Sys.Date(), 
-       "_qcCheckeR_", 
-       master_list$project_details$project_name, 
-       ".rda"))
 
-
-#################### plot run order vs principle components
-
-master_list$pc_run_plot <- list()
-master_list$pc_run_plot <- master_list$functions$pc_run_plot$value(
+master_list$pc_run_plot$post_statTarget <- list()
+master_list$pc_run_plot$post_statTarget <- master_list$functions$pc_run_plot$value(
   FUNC_data = master_list$data$statTarget_corrected,
   FUNC_metabolite_list = master_list$data$statTarget_corrected %>%
     select(-contains("sample")) %>% names(),
@@ -671,11 +828,25 @@ master_list$pc_run_plot <- master_list$functions$pc_run_plot$value(
 )
 
 
+
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 
 
-# render a html report
+
+# PROCESS: save rda output ------------------------------------------------
+
+save(master_list,
+     file = paste0(
+       master_list$project_details$project_dir,
+       "/data/rda/", Sys.Date(), 
+       "_qcCheckeR_", 
+       master_list$project_details$project_name, 
+       ".rda"))
+
+
+
+# PROCESS: render html report ---------------------------------------------
 
 fileConn<-file(paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_template.r"))
 writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/templates/TEMPLATE_lipidExploreR_report.r")) %>%
@@ -693,5 +864,4 @@ browseURL(url = paste0(master_list$project_details$project_dir,
                        "/html_report/",
                        Sys.Date(), "_", master_list$project_details$project_name, "_lipidExploreR_qcCheckeR_report.html")
 )
-
 
