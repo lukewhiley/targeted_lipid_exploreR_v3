@@ -71,7 +71,7 @@ lgw_pc_run_plot <- function(FUNC_data,
   colnames(pca_colour) <- "pca_colour" 
  
   pca_plot_colour <- pca_colour$pca_colour
-  pca_plot_colour[is.na(pca_plot_colour)] <- "none"
+  #pca_plot_colour[is.na(pca_plot_colour)] <- "none"
   
   #set colours
   plot_colours <- c(FUNC_project_colours)
