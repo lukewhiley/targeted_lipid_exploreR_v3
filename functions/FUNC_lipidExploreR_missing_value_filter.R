@@ -19,8 +19,8 @@ lgw_missing_value_filter <- function(FUNC_data,
   
   #create tibble for storing data
   FUNC_summed_data <- FUNC_data %>%
-    select(all_of(FUNC_metabolite_list)) %>%
-    select(!contains(FUNC_IS_tag))
+    select(all_of(FUNC_metabolite_list)) #%>%
+    #select(!contains(FUNC_IS_tag))
   
   feature_zero_value_threshold <- nrow(FUNC_summed_data)*FUNC_OPTION_missing_value_threshold_feature
                                  
