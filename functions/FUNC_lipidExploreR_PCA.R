@@ -56,7 +56,7 @@ lgw_pca <- function(FUNC_data,
   pca_colour <- FUNC_data %>% select(all_of(FUNC_colour_by)) #%>% as.matrix()
   colnames(pca_colour) <- "pca_colour" 
   pca_colour <- pca_colour$pca_colour
-  pca_colour[is.na(pca_colour)] <- "none"
+  #pca_colour[is.na(pca_colour)] <- "none"
   
   #set colours
   plot_colours <- FUNC_project_colours
