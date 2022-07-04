@@ -63,9 +63,9 @@ subplot(master_list$pca_output$missing_value_filter$sample_qc$plot_scores, maste
 #' 
 #' ***
 #' 
-#' ### Process step: Imputation
+#' ### Process step: Imputation 
 #' * Imputation of the remaining zero value and missing data 
-#' * Imputation is completed using x/2, where x is minimum intensity of that feature in the batch
+#' * Imputation is completed using x/2, where x is minimum intensity of that feature in the batch 
 #' 
 #' 
 #' 
@@ -77,6 +77,7 @@ knitr::kable(master_list$summary_tables$impute_table)
 #' 
 #' ### Process step: Response ratio and concentration value 
 #' Two step process:
+#' 
 #' * Calculation of target metabolite/stable isotope labelled (SIL) internal standard ratio, using predefined target metabolite/internal standard pairs
 #' * Conversion of response ratio to concentration values using single point calibration
 #' 
@@ -92,7 +93,7 @@ knitr::kable(master_list$summary_tables$concentration_summary)
 #' PCA displaying data that has undergone:
 #' * missing value filtering
 #' * imputation of remaining missing values
-#' * calculation of response ratios (target analyte peak area/internal standard peak area) 
+#' *calculation of response ratios (target analyte peak area/internal standard peak area) 
 #' 
 #' 
 #' 
@@ -152,7 +153,18 @@ knitr::kable(master_list$summary_tables$batch_correction_overview)
 #'
 #' ***
 #' 
-#' #### Run order plot
+#' #' #### Run order plot: pre-statTarget correction
+#' Plot of run order vs principle components
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+master_list$pc_run_plot$pre_statTarget$PC1$plotly
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+master_list$pc_run_plot$pre_statTarget$PC2$plotly
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+master_list$pc_run_plot$pre_statTarget$PC3$plotly
+#' 
+#' ***
+#' 
+#' #### Run order plot: post-statTarget correction
 #' Plot of run order vs principle components
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 master_list$pc_run_plot$post_statTarget$PC1$plotly
