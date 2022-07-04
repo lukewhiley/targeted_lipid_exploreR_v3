@@ -29,7 +29,7 @@ FUNC_list$out <- FUNC_data %>%
         filter(precursor_name == idx_lipid) %>%
         select(note) %>% paste0()
       
-      SIL_idx <- which(names(FUNC_data) == SIL_used)
+      SIL_idx <- which(names(FUNC_data) == SIL_used) # find SIL in dataset. If it has been removed the next phase of the function will be skipped.
       
       if(length(SIL_idx) == 1){
       #find SIL concentration factor from template
