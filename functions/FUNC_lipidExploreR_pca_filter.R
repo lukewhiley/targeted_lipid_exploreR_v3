@@ -6,19 +6,19 @@
 # FUNC_scaling = UV or Pareto
 
 lgw_pca_filter <- function(FUNC_data, 
-                    FUNC_metabolite_list, 
-                    FUNC_colour_by, 
-                    FUNC_plot_label, 
-                    FUNC_scaling,
-                    FUNC_title,
-                    FUNC_project_colours,
-                    FUNC_option_point_size,
-                    FUNC_option_invert_y,
-                    FUNC_option_invert_x,
-                    FUNC_option_plot_qc,
-                    FUNC_option_iqr_filter_samples,
-                    FUNC_option_iqr_filter_qc
-                    ){
+                           FUNC_metabolite_list, 
+                           FUNC_colour_by, 
+                           FUNC_plot_label, 
+                           FUNC_scaling,
+                           FUNC_title,
+                           FUNC_project_colours,
+                           FUNC_option_point_size,
+                           FUNC_option_invert_y,
+                           FUNC_option_invert_x,
+                           FUNC_option_plot_qc,
+                           FUNC_option_iqr_filter_samples,
+                           FUNC_option_iqr_filter_qc
+){
   require(metabom8)
   require(RColorBrewer)
   require(tidyverse)
@@ -38,7 +38,6 @@ lgw_pca_filter <- function(FUNC_data,
   }
   
   
-  
   #create data matrix for PCA
   pca_x <- FUNC_data %>%  select(all_of(FUNC_metabolite_list)) %>% as.matrix()+1 
   pca_x[pca_x == 1] <- NA #remove all 0 values (above adds 1 to all values therefore anything that = 1 was a 0)
@@ -55,14 +54,14 @@ lgw_pca_filter <- function(FUNC_data,
   PC1 <- as.numeric(as.matrix(pca_output$pca_model@t[,1]))
   PC2 <- as.numeric(as.matrix(pca_output$pca_model@t[,2]))
   PC3 <- as.numeric(as.matrix(pca_output$pca_model@t[,3]))
-
+  
   plot_Val <- as_tibble(cbind(PC1, PC2, PC3, FUNC_data$sample_name,  FUNC_data$sample_type, FUNC_data$sample_plate_id)) %>% 
-    setNames(c("PC1", "PC2", "PC3",  "sample_name", "sample_type", "sample_plate_id"))
+    setNames(c("PC1", "PC2", "PC3", "sample_name", "sample_type", "sample_plate_id"))
   plot_Val$sample_idx <- c(1:nrow(plot_Val)) %>% as.numeric()
   plot_Val$PC1 <- plot_Val$PC1 %>% as.numeric()
   plot_Val$PC2 <- plot_Val$PC2 %>% as.numeric()
   plot_Val$PC3 <- plot_Val$PC3 %>% as.numeric()
-
+  
   #set object to store
   pca_output$PC1 <- list()
   pca_output$PC1$sample_fail_idx <- list()
@@ -80,175 +79,116 @@ lgw_pca_filter <- function(FUNC_data,
   
   #loop for each component
   for(idx_PC in c("PC1", "PC2", "PC3")){
- 
-  all_data <- plot_Val# %>% select(all_of(idx_PC))
-  FUNC_all_data_median <- median(all_data[[idx_PC]])
-  FUNC_all_data_sd <- sd(all_data[[idx_PC]])
-  FUNC_all_data_q1 <- quantile(all_data[[idx_PC]], 0.25) %>% as.numeric()
-  FUNC_all_data_q3 <- quantile(all_data[[idx_PC]], 0.75) %>% as.numeric()
-  FUNC_all_data_iqr <- IQR(all_data[[idx_PC]])
-  
-
-  PC_threshold_low <- FUNC_all_data_q1 - (FUNC_all_data_iqr*FUNC_option_iqr_filter_samples)
-  PC_threshold_high <- FUNC_all_data_q3 + (FUNC_all_data_iqr*FUNC_option_iqr_filter_samples)
-
-  pca_output[[idx_PC]]$sample_fail_idx <- which(plot_Val[[idx_PC]] < PC_threshold_low | 
-                                          plot_Val[[idx_PC]] > PC_threshold_high)
-                                  #which(plot_Val$sample_type == "sample"))
-  
-  
-  
-  #for qc data
-  
-  FUNC_qc_data <- plot_Val %>% filter(sample_type == "qc") #%>% select(all_of(idx_PC))
-  FUNC_qc_data_median <- median(FUNC_qc_data[[idx_PC]])
-  FUNC_qc_data_sd <- sd(FUNC_qc_data[[idx_PC]])
-  FUNC_qc_data_q1 <- quantile(FUNC_qc_data[[idx_PC]], 0.25) %>% as.numeric()
-  FUNC_qc_data_q3 <- quantile(FUNC_qc_data[[idx_PC]], 0.75) %>% as.numeric()
-  FUNC_qc_data_iqr <- IQR(FUNC_qc_data[[idx_PC]])
-  
-  PC_threshold_low_qc <- FUNC_qc_data_q1 - (FUNC_qc_data_iqr*FUNC_option_iqr_filter_qc)
-  PC_threshold_high_qc <- FUNC_qc_data_q3 + (FUNC_qc_data_iqr*FUNC_option_iqr_filter_qc)
-  
-  pca_output[[idx_PC]]$qc_fail_idx <- intersect(which(plot_Val[[idx_PC]] < PC_threshold_low_qc | 
-                                      plot_Val[[idx_PC]] > PC_threshold_high_qc),
-                             which(plot_Val$sample_type == "qc"))
-  
-                     
-  pca_output[[idx_PC]]$fail_idx_unique <- c(pca_output[[idx_PC]]$sample_fail_idx, pca_output[[idx_PC]]$qc_fail_idx) %>% unique()
-
-  pca_output[[idx_PC]]$fail_sample <- FUNC_data$sample_name[pca_output[[idx_PC]]$fail_idx_unique]
-  
-  
-  # set plot attributes (controlled by FUNC_colour_by and FUNC_plot_label)
-  pca_colour <- list()
-  pca_colour[[idx_PC]] <- FUNC_data %>% select(all_of(FUNC_colour_by)) #%>% as.matrix()
-  colnames(pca_colour[[idx_PC]]) <- "pca_colour" 
-  pca_colour[[idx_PC]]$pca_colour <- factor(pca_colour[[idx_PC]]$pca_colour, levels = c(levels(pca_colour[[idx_PC]]$pca_colour), "sample fail", "qc fail"), ordered = TRUE)
-  pca_colour[[idx_PC]]$pca_colour[pca_output[[idx_PC]]$sample_fail_idx %>% unique()] <- "sample fail"
-  pca_colour[[idx_PC]]$pca_colour[pca_output[[idx_PC]]$qc_fail_idx %>% unique()] <- "qc fail"
-  pca_plot_colour <- pca_colour[[idx_PC]]$pca_colour
-  #pca_plot_colour[is.na(pca_plot_colour)] <- "none"
-  
-  #set colours
-  plot_colours <- c(FUNC_project_colours, "red", "orange")
-
-
- 
-  ##################  ##################  ##################  ##################
-  #produce run order plot
-  ##################  ##################  ##################  ##################
-  
-  bp <- ggplot(data=plot_Val,
-               aes(x=sample_idx,
-                   y=get(idx_PC))
-  )
-  
-  bp <- bp + geom_point(aes(fill = pca_plot_colour),
-  shape = 21,
-  size = FUNC_option_point_size
-  )
-  
-  bp <- bp + scale_fill_manual(values = c(plot_colours))
-  #bp <- bp + scale_color_manual("black")
-  
-  bp <- bp + labs(x = paste("Sample order"),
-                  y = paste0(idx_PC))
-  bp <- bp + ggtitle(paste0(FUNC_title, " - ", idx_PC))
-  bp <- bp + theme_cowplot() 
-  bp <- bp + theme(
-    plot.title = element_text(hjust = 0.5, size=14),
-    axis.text.y = element_text(size = 12, margin = margin(t = 0, r = 0, b = 0, l = 2)),
-    #axis.text.x = element_text(size = 12, angle = 45, vjust = 1, hjust = 1),
-    axis.text.x = element_blank(),
-    axis.title = element_text(size = 14),
-    #legend.text=element_text(size=12),
-    legend.title=element_blank(),
-    axis.ticks.x = element_blank(),
-  )
-  
-  #create vertical lines to separate classes on plot
-  FUNC_data_batches <- plot_Val$sample_plate_id %>% unique()
-  batch_idx <- NULL
-  
-  if(length(FUNC_data_batches) > 1){
-    for(idx_batch in FUNC_data_batches[2:length(FUNC_data_batches)]){
-      batch_idx <- c(batch_idx, min(which(plot_Val$sample_plate_id == idx_batch)))
+    
+    all_data <- plot_Val# %>% select(all_of(idx_PC))
+    FUNC_all_data_median <- median(all_data[[idx_PC]])
+    FUNC_all_data_sd <- sd(all_data[[idx_PC]])
+    FUNC_all_data_q1 <- quantile(all_data[[idx_PC]], 0.25) %>% as.numeric()
+    FUNC_all_data_q3 <- quantile(all_data[[idx_PC]], 0.75) %>% as.numeric()
+    FUNC_all_data_iqr <- IQR(all_data[[idx_PC]])
+    
+    
+    PC_threshold_low <- FUNC_all_data_q1 - (FUNC_all_data_iqr*FUNC_option_iqr_filter_samples)
+    PC_threshold_high <- FUNC_all_data_q3 + (FUNC_all_data_iqr*FUNC_option_iqr_filter_samples)
+    
+    pca_output[[idx_PC]]$sample_fail_idx <- which(plot_Val[[idx_PC]] < PC_threshold_low | 
+                                                    plot_Val[[idx_PC]] > PC_threshold_high)
+    #which(plot_Val$sample_type == "sample"))
+    
+    
+    
+    #for qc data
+    
+    FUNC_qc_data <- plot_Val %>% filter(sample_type == "qc") #%>% select(all_of(idx_PC))
+    FUNC_qc_data_median <- median(FUNC_qc_data[[idx_PC]])
+    FUNC_qc_data_sd <- sd(FUNC_qc_data[[idx_PC]])
+    FUNC_qc_data_q1 <- quantile(FUNC_qc_data[[idx_PC]], 0.25) %>% as.numeric()
+    FUNC_qc_data_q3 <- quantile(FUNC_qc_data[[idx_PC]], 0.75) %>% as.numeric()
+    FUNC_qc_data_iqr <- IQR(FUNC_qc_data[[idx_PC]])
+    
+    PC_threshold_low_qc <- FUNC_qc_data_q1 - (FUNC_qc_data_iqr*FUNC_option_iqr_filter_qc)
+    PC_threshold_high_qc <- FUNC_qc_data_q3 + (FUNC_qc_data_iqr*FUNC_option_iqr_filter_qc)
+    
+    pca_output[[idx_PC]]$qc_fail_idx <- intersect(which(plot_Val[[idx_PC]] < PC_threshold_low_qc | 
+                                                          plot_Val[[idx_PC]] > PC_threshold_high_qc),
+                                                  which(plot_Val$sample_type == "qc"))
+    
+    
+    pca_output[[idx_PC]]$fail_idx_unique <- c(pca_output[[idx_PC]]$sample_fail_idx, pca_output[[idx_PC]]$qc_fail_idx) %>% unique()
+    
+    pca_output[[idx_PC]]$fail_sample <- FUNC_data$sample_name[pca_output[[idx_PC]]$fail_idx_unique]
+    
+    
+    # set plot attributes (controlled by FUNC_colour_by and FUNC_plot_label)
+    pca_colour <- list()
+    pca_colour[[idx_PC]] <- FUNC_data %>% select(all_of(FUNC_colour_by)) #%>% as.matrix()
+    colnames(pca_colour[[idx_PC]]) <- "pca_colour" 
+    pca_colour[[idx_PC]]$pca_colour <- factor(pca_colour[[idx_PC]]$pca_colour, levels = c(levels(pca_colour[[idx_PC]]$pca_colour), "sample fail", "qc fail"), ordered = TRUE)
+    pca_colour[[idx_PC]]$pca_colour[pca_output[[idx_PC]]$sample_fail_idx %>% unique()] <- "sample fail"
+    pca_colour[[idx_PC]]$pca_colour[pca_output[[idx_PC]]$qc_fail_idx %>% unique()] <- "qc fail"
+    pca_plot_colour <- pca_colour[[idx_PC]]$pca_colour
+    #pca_plot_colour[is.na(pca_plot_colour)] <- "none"
+    
+    #set colours
+    plot_colours <- c(FUNC_project_colours, "red", "orange")
+    
+    
+    
+    ##################  ##################  ##################  ##################
+    #produce run order plot
+    ##################  ##################  ##################  ##################
+    
+    bp <- ggplot(data=plot_Val,
+                 aes(x=sample_idx,
+                     y=get(idx_PC))
+    )
+    
+    bp <- bp + geom_point(aes(fill = pca_plot_colour),
+                          shape = 21,
+                          size = FUNC_option_point_size
+    )
+    
+    bp <- bp + scale_fill_manual(values = c(plot_colours))
+    #bp <- bp + scale_color_manual("black")
+    
+    bp <- bp + labs(x = paste("Sample order"),
+                    y = paste0(idx_PC))
+    bp <- bp + ggtitle(paste0(FUNC_title, " - ", idx_PC))
+    bp <- bp + theme_cowplot() 
+    bp <- bp + theme(
+      plot.title = element_text(hjust = 0.5, size=14),
+      axis.text.y = element_text(size = 12, margin = margin(t = 0, r = 0, b = 0, l = 2)),
+      #axis.text.x = element_text(size = 12, angle = 45, vjust = 1, hjust = 1),
+      axis.text.x = element_blank(),
+      axis.title = element_text(size = 14),
+      #legend.text=element_text(size=12),
+      legend.title=element_blank(),
+      axis.ticks.x = element_blank(),
+    )
+    
+    #create vertical lines to separate classes on plot
+    FUNC_data_batches <- plot_Val$sample_plate_id %>% unique()
+    batch_idx <- NULL
+    
+    if(length(FUNC_data_batches) > 1){
+      for(idx_batch in FUNC_data_batches[2:length(FUNC_data_batches)]){
+        batch_idx <- c(batch_idx, min(which(plot_Val$sample_plate_id == idx_batch)))
+      }
+      
+      bp <- bp + geom_vline(xintercept=c(batch_idx),color="grey")
     }
     
-    bp <- bp + geom_vline(xintercept=c(batch_idx),color="grey")
-  }
-  
-  pca_output[[idx_PC]]$plotly <- bp %>% ggplotly() %>% layout(legend = list(orientation = "h",   # show entries horizontally
-                                                                                      xanchor = "center",  # use center of legend as anchor
-                                                                                      x = 0.5,
-                                                                                      y = -0.2,
-                                                                                      title=list(text="Group comparison:"))
-  )
-                                                                        
-  }
-  
-  
-  ##################  ##################  ##################  ##################  ##################
-  #produce plot_ly PCA scores plot
-  
-  #axis settings
-  x_axis_settings_scores <- list(
-    zeroline = TRUE,
-    showline = TRUE,
-    linecolor = toRGB("black"),
-    linewidth = 2,
-    showgrid = TRUE,
-    title = paste("PC1 (", round(pca_output$pca_model@Parameters$R2[1]*100,1), " %)", sep = "")
-  )
-  
-  y_axis_settings_scores <- list(
-    zeroline = TRUE,
-    showline = TRUE,
-    linecolor = toRGB("black"),
-    linewidth = 2,
-    showgrid = TRUE,
-    title = paste("PC2 (", round(pca_output$pca_model@Parameters$R2[2]*100,1), " %)", sep = "")
-  )
-  
-  pca_output$plot_scores <- plot_ly(type = "scatter", 
-                                    mode = "markers", 
-                                    data = plot_Val, 
-                                    x = ~PC1, 
-                                    y = ~PC2, 
-                                    text = ~pca_plot_label, 
-                                    color = ~pca_colour, 
-                                    #colors = c(plot_colors[1:length(unique(pca_colour))]), 
-                                    colors = plot_colours,
-                                    legendgroup = ~pca_colour,
-                                    showlegend = NULL,
-                                    marker = list(size = 10, 
-                                                  #color = '#1E90FF', 
-                                                  opacity = 1,
-                                                  line = list(
-                                                    color = '#000000',
-                                                    width = 1)
-                                    )) %>% 
-    layout(
-      title = paste("PCA - ", title_text, sep = ""),
-      xaxis = x_axis_settings_scores,
-      yaxis = y_axis_settings_scores,
-      #showlegend = TRUE, 
-      margin = list(l = 65, r = 50, b=65, t=85),
-      title = paste0(FUNC_title, ": PCA Scores")
+    pca_output[[idx_PC]]$plotly <- bp %>% ggplotly() %>% layout(legend = list(orientation = "h",   # show entries horizontally
+                                                                              xanchor = "center",  # use center of legend as anchor
+                                                                              x = 0.5,
+                                                                              y = -0.2,
+                                                                              title=list(text="Group comparison:"))
     )
-  
-  if(FUNC_option_invert_x == TRUE){
-    pca_output$plot_scores <- pca_output$plot_scores %>%
-      layout(xaxis = list(autorange = "reversed"))
+    
+    pca_output[[idx_PC]]$plot_Val <- bind_cols(plot_Val, "plot_colour" = pca_plot_colour)
+    
   }
   
-  if(FUNC_option_invert_y == TRUE){
-    pca_output$plot_scores <- pca_output$plot_scores %>%
-      layout(yaxis = list(autorange = "reversed"))
-  }
-  
-  ##################  ##################  ##################  ##################  ##################
   
   
   
@@ -258,5 +198,5 @@ lgw_pca_filter <- function(FUNC_data,
     unique()
   
   pca_output
-
+  
 }
