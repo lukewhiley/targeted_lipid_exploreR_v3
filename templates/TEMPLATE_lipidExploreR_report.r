@@ -40,9 +40,14 @@ subplot(master_list$pca_output$data_sorted$sample_qc$plot_scores, master_list$pc
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-knitr::kable(master_list$summary_tables$missing_value_filter_summary)
+knitr::kable(master_list$summary_lists$missing_value_filter$failed_sil)s
 #'
 #'
+#'The following internal standards failed the missing value filter and were removed from the project:
+#'
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+knitr::kable(master_list$summary_lists$missing_value_filter$feature_fail_list)
+#' 
 #' ***
 #' 
 #' #### PCA: Post-missing value filter
