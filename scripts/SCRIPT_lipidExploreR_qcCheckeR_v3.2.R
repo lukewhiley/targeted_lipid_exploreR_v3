@@ -1,12 +1,9 @@
 
 # PROCESS: Welcome section and project set up --------------------------------------
 
-
 #welcome messages
-dlg_message("Welcome to lipid qc exploreR! :-)", type = 'ok'); dlg_message("Please run lipid SkylineR notebook prior to running this notebook", type = 'ok'); 
-
 if(!exists("master_list")){
-  dlg_message("Now open master_list.rda file produced by SkylineR", type = 'ok')
+  dlg_message("Welcome to lipid qc exploreR! :-)", type = 'ok'); dlg_message("Please run lipid SkylineR notebook prior to running this notebook", type = 'ok'); dlg_message("Now open master_list.rda file produced by SkylineR", type = 'ok')
 # load rda file
 load(file = file.choose())
 }
