@@ -146,7 +146,7 @@ lgw_signal_correction <- function(FUNC_project_directory,
   }
   
   FUNC_list$PhenoFile$template_sample_id$batch <- FUNC_list$PhenoFile$template_sample_id$batch %>%
-    as.integer()
+    as.numeric()
   
   #final Phenofile
   FUNC_list$PhenoFile$PhenoFile <- FUNC_list$PhenoFile$template_sample_id %>%
