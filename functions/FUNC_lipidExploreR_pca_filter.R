@@ -65,19 +65,19 @@ lgw_pca_filter <- function(FUNC_data,
     )
     
     #for qc
-    sample_median <- (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] %>% median()
-    sample_sd <- (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] %>% sd()
-    sample_iq1 <- (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] %>% quantile(0.25) %>% as.numeric()
-    sample_iq3 <- (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] %>% quantile(0.75) %>% as.numeric()
-    sample_iqr <- (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] %>% IQR()
-    sample_threshold_low <- sample_iq1 - (sample_iqr*FUNC_option_iqr_filter_qc)
-    sample_threshold_high <- sample_iq3 + (sample_iqr*FUNC_option_iqr_filter_qc)
+    qc_median <- (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] %>% median()
+    qc_sd <- (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] %>% sd()
+    qc_iq1 <- (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] %>% quantile(0.25) %>% as.numeric()
+    qc_iq3 <- (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] %>% quantile(0.75) %>% as.numeric()
+    qc_iqr <- (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] %>% IQR()
+    qc_threshold_low <- qc_iq1 - (qc_iqr*FUNC_option_iqr_filter_qc)
+    qc_threshold_high <- qc_iq3 + (qc_iqr*FUNC_option_iqr_filter_qc)
     
     pca_output$fail_list <- c(pca_output$fail_list,
                               (pca_output$plot_Val %>% filter(sample_type == "qc"))[["sample_name"]][
                                 which(
-                                  (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] < PC_threshold_low | 
-                                    (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] > PC_threshold_high)]
+                                  (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] < qc_threshold_low | 
+                                    (pca_output$plot_Val %>% filter(sample_type == "qc"))[[idx_PC]] > qc_threshold_high)]
     )
   }
   
