@@ -129,7 +129,7 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline"))
 }
 
 #interact with skyline
-dlg_message("1. Please open skylineMS software", type = 'ok');dlg_message("2. Create new small molecule file", type = 'ok'); dlg_message("3. Import the [skylineR_RT_update.csv] transition list located in [~project_directory/data/skyline] folder. In Skyline navigate to File -> import -> transition list", type = 'ok'); dlg_message("4. Save project", type = 'ok'); dlg_message("5. Import mzml data files for processing by navigating to File -> import -> results", type = 'ok'); dlg_message("6. Let skyline process.  Export results to [~project_directory/data/skyline] folder with the tag xskylineR_1.  Export reports must have the following headings: Replicate Name, Molecule List Name, Molecule Name, Area, Retention Time, Start Time and End Time", type = 'ok'); 
+dlg_message("1. Please open skylineMS software", type = 'ok');dlg_message("2. Create new small molecule file", type = 'ok'); dlg_message("3. Import the [skylineR_RT_update.csv] transition list located in [~project_directory/data/skyline] folder. In Skyline navigate to File -> import -> transition list", type = 'ok'); dlg_message("4. Save project", type = 'ok'); dlg_message("5. Import mzml data files for processing by navigating to File -> import -> results", type = 'ok'); dlg_message("6. Let skyline process.  Export results to [~project_directory/data/skyline] folder with the tag xskylineR_1.  Export reports must have the following headings: File Name, Molecule List Name, Molecule Name, Area, Retention Time, Start Time and End Time", type = 'ok'); 
 
 #re_import skyline file
 master_list$data$skyline_reports$report_1 <- read_csv(file = paste0(list.files(
@@ -142,7 +142,7 @@ for(idx_plate in master_list$project_details$mzml_plate_list){
   master_list$templates$mrm_guides$mrm_guide_pb_update[[idx_plate]] <- master_list$environment$user_functions$mrm_pb_findeR$value(
     FUNC_data = master_list$data$skyline_reports$report_1 %>% 
       clean_names() %>%
-      filter(replicate_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))),
+      filter(file_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))),
     FUNC_OPTION_qc_type = master_list$project_details$qc_type
   )
 }
@@ -154,7 +154,7 @@ write_csv(x = master_list$templates$mrm_guides$mrm_guide_pb_update_all_plates,
           file = paste0(master_list$project_details$project_dir, "/data/skyline/", Sys.Date(), "_peak_boundary_update_", 
                         master_list$project_details$project_name, ".csv"))
 
-dlg_message("1. Please return to skylineMS software", type = 'ok'); dlg_message("2. Import the new skylineR_boundary_update.csv transition list from csv file by navigating to File -> import -> peak boundaries", type = 'ok'); dlg_message("4. Save project", type = 'ok');dlg_message("5. Export results to [~project_directory/data/skyline] folder with the tag xskylineR_2.  Export reports must have the following headings: Replicate Name, Molecule List Name, Molecule Name, Area, Retention Time, Start Time and End Time", type = 'ok'); dlg_message("7. Now return to R Studio and run the lipid_exploreR to QC check data", type = 'ok')
+dlg_message("1. Please return to skylineMS software", type = 'ok'); dlg_message("2. Import the new skylineR_boundary_update.csv transition list from csv file by navigating to File -> import -> peak boundaries", type = 'ok'); dlg_message("4. Save project", type = 'ok');dlg_message("5. Export results to [~project_directory/data/skyline] folder with the tag xskylineR_2.  Export reports must have the following headings: File Name, Molecule List Name, Molecule Name, Area, Retention Time, Start Time and End Time", type = 'ok'); dlg_message("7. Now return to R Studio and run the lipid_exploreR to QC check data", type = 'ok')
 
 #import processed skyline_data
 #re_import skyline file
