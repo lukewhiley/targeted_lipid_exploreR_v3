@@ -15,8 +15,6 @@ lgw_pca_filter <- function(FUNC_data,
   require(tidyverse)
   
   pca_output <- list()
-
-  title_text <- FUNC_title
   
   qc_idx <- which(FUNC_data[["sample_type"]] == "qc")
   
