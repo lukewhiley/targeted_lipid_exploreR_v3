@@ -19,7 +19,7 @@ knitr::kable(master_list$summary_tables$transposed_summary)
 #'
 #'
 #' ***
-#' #### PCA: Raw skyline imports
+#' ### Plot: PCA: Raw skyline imports
 #' PCA displaying raw data imported from skyline. There has been no outlier removal or data processing at this point.
 #'
 #' 
@@ -29,7 +29,7 @@ subplot(master_list$pca_analysis$data_sorted$sample_qc$plot_scores, master_list$
 #'
 #' ***
 #' 
-#' ### Process step: Missing value filter 
+#' ### Process: Missing value filter 
 #' 
 #'  * Step 1: Remove all samples that have > 50% missing values (removes any mis-injections etc that may be present in the data) 
 #'  * Step 2: Remove all metabolite features that have > 50% missing values (zero, NA, NaN etc) 
@@ -49,8 +49,8 @@ knitr::kable(master_list$process_lists$missing_value_filter$failed_SIL %>% as_ti
 #' 
 #' ***
 #' 
-#' #### PCA: Post-missing value filter
-#' PCA score plot displaying data that has undergone the following process steps: 
+#' ### Plot: PCA: Post-missing value filter
+#' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filtering
 #' 
@@ -62,10 +62,9 @@ subplot(master_list$pca_analysis$missing_value_filter$sample_qc$plot_scores, mas
 #' 
 #' ***
 #' 
-#' ### Process step: Imputation 
+#' ### Process: Imputation of remaining zero values and missing data 
 #' 
-#'  * Imputation of the remaining zero value and missing data 
-#'  * Imputation is completed using x/2, where x is minimum intensity of that feature in the plate  
+#'  Imputation is completed using x/2, where x is minimum intensity of that feature in the plate  
 #' 
 #' 
 #' 
@@ -75,7 +74,7 @@ knitr::kable(master_list$summary_tables$impute_table)
 #'
 #' ***
 #' 
-#' ### Process step: Calculation of response ratio and concentration value 
+#' ### Process: Calculation of response ratio and concentration value 
 #'  
 #'  * Step 1: Calculation of target metabolite/stable isotope labelled (SIL) internal standard ratio, using predefined target metabolite/internal standard pairs 
 #'  * Step 2: Conversion of response ratio to concentration values using single point calibration 
@@ -90,8 +89,8 @@ knitr::kable(master_list$summary_tables$concentration_summary)
 #' 
 #' ***
 #' 
-#' #### PCA: Post-calculation of internal standard ratio's and conversion to concentration values
-#' PCA score plot displaying data that has undergone the following process steps: 
+#' ### Plot: PCA: Post-calculation of internal standard ratio's and conversion to concentration values
+#' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filtering 
 #'  * imputation of remaining missing values 
@@ -107,19 +106,21 @@ subplot(master_list$pca_analysis$concentration$sample_qc$plot_scores, master_lis
 #'
 #' ***
 #' 
-#' ### Process step: Sample outlier filter
+#' ### Process: Sample outlier filter
 #' Filter to remove all outlier samples with excessive principal component (PC) variation: 
 #' 
 #'  * Step 1 : Create PCA scores for PC 1:3 
 #'  * Step 2: Find samples with PC score > 1.5 standard deviation of median PC 
-#'  * note - filter is in development and under evaluation 
 #' 
+#' ***
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 knitr::kable(master_list$summary_tables$pc_filter_summary)
 #'
 #' ***
-#' #### Run order vs PC scores plot: pre-statTarget correction
+#' 
+#' 
+#' ### Plot: Run order vs PC scores: pre-statTarget correction
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
@@ -131,8 +132,8 @@ master_list$pc_runorder_plots$pre_filter$PC3$plotly
 #'
 #' ***
 #' 
-#' #### PCA: Post-principal component filter
-#' PCA score plot displaying data that has undergone the following process steps: 
+#' ### Plot: PCA: Post-principal component filter
+#' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filter 
 #'  * imputation of remaining missing values 
@@ -149,7 +150,7 @@ subplot(master_list$pca_analysis$pc_filter$sample_qc$plot_scores, master_list$pc
 #'
 #' ***
 #'
-#' ### Process step: statTarget - signal drift correction of the data 
+#' ### Process: statTarget - signal drift correction of the data 
 #' 
 #'  * Data from each individual batch undergoes signal drift correction using statTarget package (https://stattarget.github.io/)
 #'  * This is performed both within individual plates and across total batch 
@@ -161,7 +162,7 @@ knitr::kable(master_list$summary_tables$batch_correction_overview)
 #' 
 #' ***
 #' 
-#' #### Run order vs PC scores plot: post-statTarget correction
+#' ### Plot: Run order vs PC scores: post-statTarget correction
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 master_list$pc_runorder_plots$post_statTarget$PC1$plotly
@@ -172,8 +173,8 @@ master_list$pc_runorder_plots$post_statTarget$PC3$plotly
 #'
 #' ***
 #' 
-#' #### PCA: Post-signal drift/batch correction 
-#' PCA score plot displaying data that has undergone the following process steps: 
+#' ### Plot: PCA: Post-signal drift/batch correction 
+#' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filtering 
 #'  * imputation of remaining missing values 
