@@ -2,7 +2,7 @@
 dlg_message("Welcome to skylineR! :-)", type = 'ok')
 
 #set up project master list
-master_list <- list(); master_list$environment <- list(); master_list$scripts <- list(); master_list$templates <- list(); master_list$project_details <- list(); master_list$functions <- list();  master_list$mrm_guides <- list(); master_list$data <- list(); master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list()
+master_list <- list(); master_list$environment <- list(); master_list$environment$functions <- list(); master_list$templates <- list(); master_list$templates$mrm_guides <- list(); master_list$project_details <- list();    master_list$data <- list(); master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list()
 
 #store environment details
 master_list$environment$r_version <- sessionInfo()$R.version$version.string
@@ -46,7 +46,7 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/batch_corr
 if(!dir.exists(paste0(master_list$project_details$project_dir, "/html_report"))){dir.create(paste0(master_list$project_details$project_dir, "/html_report"))}
 
 #read in mrm_guide from github
-master_list$mrm_guides$mrm_guide <- read_csv(
+master_list$templates$mrm_guides$mrm_guide <- read_csv(
   paste0(master_list$project_details$github_master_dir,
          "/templates/LGW_lipid_mrm_template.csv"),
   show_col_types = FALSE) 
@@ -105,22 +105,22 @@ for(idx_plate in master_list$project_details$mzml_plate_list){
 
 #######
 # Retention time optimiser
-master_list$mrm_guides$mrm_guide_rt_update <- tibble()
+master_list$templates$mrm_guides$mrm_guide_rt_update <- tibble()
 
 #run function
-master_list$mrm_guides$mrm_guide_rt_update <- master_list$functions$mrm_RT_findeR_mzR$value(
+master_list$templates$mrm_guides$mrm_guide_rt_update <- master_list$functions$mrm_RT_findeR_mzR$value(
   FUNC_mzR = temp_mzR_list, #list for each sample containing $mzR_object; $mzR_header; $mzR_chromatogram
-  FUNC_mrm_guide = master_list$mrm_guides$mrm_guide %>% clean_names(),
+  FUNC_mrm_guide = master_list$templates$mrm_guides$mrm_guide %>% clean_names(),
   FUNC_OPTION_qc_type = master_list$project_details$qc_type)
 
 #set names so that skyline recognises columns
-master_list$mrm_guides$mrm_guide_rt_update <- setNames(master_list$mrm_guides$mrm_guide_rt_update,
-                                                       names(master_list$mrm_guides$mrm_guide))
+master_list$templates$mrm_guides$mrm_guide_rt_update <- setNames(master_list$templates$mrm_guides$mrm_guide_rt_update,
+                                                       names(master_list$templates$mrm_guides$mrm_guide))
 
 rm(temp_mzR_list)
 
 #export updated optimised RT times
-write_csv(x = master_list$mrm_guides$mrm_guide_rt_update,
+write_csv(x = master_list$templates$mrm_guides$mrm_guide_rt_update,
           file = paste0(master_list$project_details$project_dir, "/data/skyline/", Sys.Date(), "_RT_update_", 
                         master_list$project_details$project_name, ".csv"))
 
@@ -138,9 +138,9 @@ master_list$data$skyline_reports$report_1 <- read_csv(file = paste0(list.files(
   pattern = "xskylineR_1", full.names = TRUE)), show_col_types = FALSE)
 
 #perform peak boundary update
-master_list$mrm_guides$mrm_guide_pb_update <- list()
+master_list$templates$mrm_guides$mrm_guide_pb_update <- list()
 for(idx_plate in master_list$project_details$mzml_plate_list){
-  master_list$mrm_guides$mrm_guide_pb_update[[idx_plate]] <- master_list$functions$mrm_pb_findeR$value(
+  master_list$templates$mrm_guides$mrm_guide_pb_update[[idx_plate]] <- master_list$functions$mrm_pb_findeR$value(
     FUNC_data = master_list$data$skyline_reports$report_1 %>% 
       clean_names() %>%
       filter(replicate_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))),
@@ -148,10 +148,10 @@ for(idx_plate in master_list$project_details$mzml_plate_list){
   )
 }
 #bind all rows into master pb list
-master_list$mrm_guides$mrm_guide_pb_update_all_plates <- bind_rows(master_list$mrm_guides$mrm_guide_pb_update)
+master_list$templates$mrm_guides$mrm_guide_pb_update_all_plates <- bind_rows(master_list$templates$mrm_guides$mrm_guide_pb_update)
 
 #write peak boundary output
-write_csv(x = master_list$mrm_guides$mrm_guide_pb_update_all_plates,
+write_csv(x = master_list$templates$mrm_guides$mrm_guide_pb_update_all_plates,
           file = paste0(master_list$project_details$project_dir, "/data/skyline/", Sys.Date(), "_peak_boundary_update_", 
                         master_list$project_details$project_name, ".csv"))
 
