@@ -79,7 +79,8 @@ lgw_pca_filter <- function(FUNC_data,
     )
   }
   
-  pca_output$fail_list <- unique(pca_output$fail_list)
+  #metabolites must fail in >1 PC to be classed an failed outlier sample
+  pca_output$fail_list <- table(pca_output$fail_list) %>% as.matrix() %>% as_tibble(rownames = "sample_name") %>% rename(frequency = V1) %>% filter(frequency > 1)
   pca_output
   
 }
