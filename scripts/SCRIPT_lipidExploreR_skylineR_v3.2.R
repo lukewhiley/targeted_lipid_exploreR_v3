@@ -2,7 +2,7 @@
 dlg_message("Welcome to skylineR! :-)", type = 'ok')
 
 #set up project master list
-master_list <- list(); master_list$environment <- list(); master_list$environment$functions <- list(); master_list$templates <- list(); master_list$templates$mrm_guides <- list(); master_list$project_details <- list();    master_list$data <- list(); master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list(); master_list$process_lists <- list()
+master_list <- list(); master_list$environment <- list(); master_list$environment$user_functions <- list(); master_list$templates <- list(); master_list$templates$mrm_guides <- list(); master_list$project_details <- list();    master_list$data <- list(); master_list$data$mzR <- list(); master_list$data$skyline_reports <- list(); master_list$summary_tables <- list(); master_list$process_lists <- list()
 
 #store environment details
 master_list$environment$r_version <- sessionInfo()$R.version$version.string
@@ -53,12 +53,12 @@ master_list$templates$mrm_guides$mrm_guide <- read_csv(
 
 #source functions
 #RT finder
-master_list$functions$mrm_RT_findeR_mzR <- source(paste0(
+master_list$environment$user_functions$mrm_RT_findeR_mzR <- source(paste0(
   master_list$project_details$github_master_dir , 
   "/functions/FUNC_lipidExploreR_MRM_findeR_pwiz3019_mzR.R"))
 
 #peak_boundary findeR
-master_list$functions$mrm_pb_findeR <- source(paste0(
+master_list$environment$user_functions$mrm_pb_findeR <- source(paste0(
   master_list$project_details$github_master_dir, 
   "/functions/FUNC_lipidExploreR_peak_boundary_findeR.R"))
 
@@ -108,7 +108,7 @@ for(idx_plate in master_list$project_details$mzml_plate_list){
 master_list$templates$mrm_guides$mrm_guide_rt_update <- tibble()
 
 #run function
-master_list$templates$mrm_guides$mrm_guide_rt_update <- master_list$functions$mrm_RT_findeR_mzR$value(
+master_list$templates$mrm_guides$mrm_guide_rt_update <- master_list$environment$user_functions$mrm_RT_findeR_mzR$value(
   FUNC_mzR = temp_mzR_list, #list for each sample containing $mzR_object; $mzR_header; $mzR_chromatogram
   FUNC_mrm_guide = master_list$templates$mrm_guides$mrm_guide %>% clean_names(),
   FUNC_OPTION_qc_type = master_list$project_details$qc_type)
@@ -140,7 +140,7 @@ master_list$data$skyline_reports$report_1 <- read_csv(file = paste0(list.files(
 #perform peak boundary update
 master_list$templates$mrm_guides$mrm_guide_pb_update <- list()
 for(idx_plate in master_list$project_details$mzml_plate_list){
-  master_list$templates$mrm_guides$mrm_guide_pb_update[[idx_plate]] <- master_list$functions$mrm_pb_findeR$value(
+  master_list$templates$mrm_guides$mrm_guide_pb_update[[idx_plate]] <- master_list$environment$user_functions$mrm_pb_findeR$value(
     FUNC_data = master_list$data$skyline_reports$report_1 %>% 
       clean_names() %>%
       filter(replicate_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))),
