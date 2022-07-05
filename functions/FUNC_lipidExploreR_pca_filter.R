@@ -81,6 +81,7 @@ lgw_pca_filter <- function(FUNC_data,
     )
   }
   
+  pca_output$fail_list <- unique(pca_output$fail_list)
   pca_output
   
 }
