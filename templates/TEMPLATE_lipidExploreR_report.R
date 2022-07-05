@@ -149,17 +149,6 @@ subplot(master_list$pca_analysis$pc_filter$sample_qc$plot_scores, master_list$pc
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 knitr::kable(master_list$summary_tables$batch_correction_overview)
 #' 
-#'
-#' ***
-#' 
-#' #### Run order plot: pre-statTarget correction
-#' Plot of run order vs principle components
-#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_runorder_plots$pre_statTarget$PC1$plotly
-#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_runorder_plots$pre_statTarget$PC2$plotly
-#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_runorder_plots$pre_statTarget$PC3$plotly
 #' 
 #' ***
 #' 
