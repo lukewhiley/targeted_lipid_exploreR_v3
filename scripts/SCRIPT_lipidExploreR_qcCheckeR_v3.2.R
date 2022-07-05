@@ -797,13 +797,13 @@ save(master_list,
 
 # PROCESS: render html report ---------------------------------------------
 
-fileConn<-file(paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_template.r"))
-writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/templates/TEMPLATE_lipidExploreR_report.r")) %>%
+fileConn<-file(paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_template.R"))
+writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/templates/TEMPLATE_lipidExploreR_report.R")) %>%
              httr::content(as = "text"), fileConn)
 close(fileConn)
 
 
-rmarkdown::render(input = paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_template.r"),
+rmarkdown::render(input = paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_template.R"),
                   output_format = "html_document",
                   output_dir = paste0(master_list$project_details$project_dir, "/html_report"),
                   output_file = paste0(Sys.Date(), "_", master_list$project_details$project_name, "_lipidExploreR_qcCheckeR_report.html")
