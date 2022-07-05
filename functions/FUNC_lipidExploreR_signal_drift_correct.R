@@ -39,7 +39,7 @@ lgw_signal_correction <- function(FUNC_project_directory,
   
   if(!dir.exists(paste0(FUNC_project_directory, "/", Sys.Date(), "_signal_correction_results"))){
     dir.create(paste(FUNC_project_directory, "/", Sys.Date(), "_signal_correction_results", sep=""))
-    #setwd(paste(FUNC_project_directory, "/", Sys.Date(), "_signal_correction_results", sep="")) 
+    setwd(paste(FUNC_project_directory, "/", Sys.Date(), "_signal_correction_results", sep="")) 
   }
   
   #create data list 
