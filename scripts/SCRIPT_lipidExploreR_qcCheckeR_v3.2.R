@@ -47,12 +47,12 @@ master_list$summary_tables$transposed_summary <- list()
 for(idx_data in master_list$project_details$mzml_plate_list){
   master_list$data$transposed[[idx_data]] <- pivot_wider(
     data = master_list$data$skyline_reports$report_2 %>%
-      filter(replicate_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_data]]))),
-    id_cols = replicate_name,
+      filter(file_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_data]]))),
+    id_cols = file_name,
     names_from = molecule_name,
     values_from = area
   ) %>%
-    rename(sample_name = replicate_name)
+    rename(sample_name = file_name)
   
   #make numeric 
   master_list$data$transposed[[idx_data]][,-1] <-
