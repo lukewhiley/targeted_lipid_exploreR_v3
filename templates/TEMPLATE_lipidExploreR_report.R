@@ -141,7 +141,7 @@ subplot(master_list$pca_analysis$pc_filter$sample_qc$plot_scores, master_list$pc
 #'
 #' ***
 #'
-#' ### Process step: Signal drift and batch correct the data (per project)
+#' ### Process step: statTarget - signal drift correction of the data 
 #' * Data from each individual batch undergoes signal drift correction using statTarget package (https://stattarget.github.io/)
 #' * This is performed within individual batches at this point to evaluate the performance of each batch
 #' 
