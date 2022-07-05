@@ -45,7 +45,7 @@ skylineR_script <- GET(url = paste0("https://raw.githubusercontent.com/lukewhile
 eval(parse(text = skylineR_script), envir = .GlobalEnv)
 
 #clean environment
-rm(list = ls())
+rm(list = c(ls()[which(ls() != "master_list")]))
 
 ```
 
@@ -84,8 +84,6 @@ qcCheckR_script <- GET(url = paste0("https://raw.githubusercontent.com/lukewhile
 eval(parse(text = qcCheckR_script), envir = .GlobalEnv)
 
 #clean environment
-rm(list = ls())
-
-
+rm(list = c(ls()[which(ls() != "master_list")]))
 
 ```
