@@ -142,7 +142,7 @@ for(idx_plate in master_list$project_details$mzml_plate_list){
   master_list$templates$mrm_guides$mrm_guide_pb_update[[idx_plate]] <- master_list$environment$user_functions$mrm_pb_findeR$value(
     FUNC_data = master_list$data$skyline_reports$report_1 %>% 
       clean_names() %>%
-      filter(file_name %in% sub(".mzML", "", names(master_list$data$mzR[[idx_plate]]))),
+      filter(file_name %in% names(master_list$data$mzR[[idx_plate]])),
     FUNC_OPTION_qc_type = master_list$project_details$qc_type
   )
 }
