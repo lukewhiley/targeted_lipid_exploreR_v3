@@ -19,8 +19,7 @@ knitr::kable(master_list$summary_tables$transposed_summary)
 #'
 #'
 #' ***
-#' ### Plot: PCA: Raw skyline imports
-#' PCA displaying raw data imported from skyline. There has been no outlier removal or data processing at this point.
+#' ### Plot: PCA scores: Raw skyline imports (no data processing or outlier removal)
 #'
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
@@ -31,8 +30,8 @@ subplot(master_list$pca_analysis$data_sorted$sample_qc$plot_scores, master_list$
 #' 
 #' ### Process: Missing value filter 
 #' 
-#'  * Step 1: Remove all samples that have > 50% missing values (removes any mis-injections etc that may be present in the data) 
-#'  * Step 2: Remove all metabolite features that have > 50% missing values (zero, NA, NaN etc) 
+#'  * Step 1: Remove all samples that have > 50% missing values 
+#'  * Step 2: Remove all metabolite/lipid features that have > 50% missing values (zero, NA, NaN etc) 
 #' 
 #' 
 #' 
@@ -49,7 +48,7 @@ knitr::kable(master_list$process_lists$missing_value_filter$failed_SIL %>% as_ti
 #' 
 #' ***
 #' 
-#' ### Plot: PCA: Post-missing value filter
+#' ### Plot: PCA scores: Post-missing value filter
 #' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filtering
@@ -89,7 +88,7 @@ knitr::kable(master_list$summary_tables$concentration_summary)
 #' 
 #' ***
 #' 
-#' ### Plot: PCA: Post-calculation of internal standard ratio's and conversion to concentration values
+#' ### Plot: PCA scores: Post-calculation of internal standard ratio's and conversion to concentration values
 #' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filtering 
@@ -132,7 +131,7 @@ master_list$pc_runorder_plots$pre_filter$PC3$plotly
 #'
 #' ***
 #' 
-#' ### Plot: PCA: Post-principal component filter
+#' ### Plot: PCA scores: Post-principal component filter
 #' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filter 
@@ -173,7 +172,7 @@ master_list$pc_runorder_plots$post_statTarget$PC3$plotly
 #'
 #' ***
 #' 
-#' ### Plot: PCA: Post-signal drift/batch correction 
+#' ### Plot: PCA scores: Post-signal drift/batch correction 
 #' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filtering 
