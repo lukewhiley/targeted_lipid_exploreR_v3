@@ -66,6 +66,7 @@ dlg_message("convert SCIEX files to mzML", type = 'ok'); dlg_message(paste0("mzM
 
 master_list$project_details$mzml_plate_list <- list.dirs(paste0(master_list$project_details$project_dir, 
                                                                 "/data/mzml"),
+                                                         recursive = FALSE,
                                                          full.names = FALSE)
 
 #master_list$project_details$mzml_plate_list <- master_list$project_details$mzml_plate_list[grep("plate_", master_list$project_details$mzml_plate_list)]
