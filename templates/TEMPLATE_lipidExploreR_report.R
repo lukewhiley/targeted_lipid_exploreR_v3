@@ -172,7 +172,7 @@ master_list$pc_runorder_plots$post_statTarget$PC3$plotly
 #'
 #' ***
 #' 
-#' ### Plot: PCA scores: Post-signal drift/batch correction 
+#' ### Plot: PCA scores: post-signal drift/batch correction 
 #' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filtering 
