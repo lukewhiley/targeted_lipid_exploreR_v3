@@ -48,7 +48,7 @@ knitr::kable(master_list$process_lists$missing_value_filter$failed_SIL %>% as_ti
 #' 
 #' ***
 #' 
-#' ### Plot: PCA scores: Post-missing value filter
+#' ### Plot: PCA scores: post-missing value filter
 #' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filtering
@@ -88,7 +88,7 @@ knitr::kable(master_list$summary_tables$concentration_summary)
 #' 
 #' ***
 #' 
-#' ### Plot: PCA scores: Post-calculation of internal standard ratio's and conversion to concentration values
+#' ### Plot: PCA scores: post-calculation of internal standard ratio's and conversion to concentration values
 #' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filtering 
@@ -119,7 +119,7 @@ knitr::kable(master_list$summary_tables$pc_filter_summary)
 #' ***
 #' 
 #' 
-#' ### Plot: Run order vs PC scores: pre-statTarget correction
+#' ### Plot: Run order vs PC scores: pre-statTarget signal drift correction
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
@@ -131,7 +131,7 @@ master_list$pc_runorder_plots$pre_filter$PC3$plotly
 #'
 #' ***
 #' 
-#' ### Plot: PCA scores: Post-principal component filter
+#' ### Plot: PCA scores: post-principal component filter
 #' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
 #'  * missing value filter 
@@ -149,7 +149,7 @@ subplot(master_list$pca_analysis$pc_filter$sample_qc$plot_scores, master_list$pc
 #'
 #' ***
 #'
-#' ### Process: statTarget - signal drift correction of the data 
+#' ### Process: statTarget signal drift correction of the data 
 #' 
 #'  * Data from each individual batch undergoes signal drift correction using statTarget package (https://stattarget.github.io/)
 #'  * This is performed both within individual plates and across total batch 
@@ -161,7 +161,7 @@ knitr::kable(master_list$summary_tables$batch_correction_overview)
 #' 
 #' ***
 #' 
-#' ### Plot: Run order vs PC scores: post-statTarget correction
+#' ### Plot: Run order vs PC scores: post-statTarget signal drift correction
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 master_list$pc_runorder_plots$post_statTarget$PC1$plotly
@@ -180,7 +180,7 @@ master_list$pc_runorder_plots$post_statTarget$PC3$plotly
 #'  * calculation of response ratios (target analyte peak area/internal standard peak area) 
 #'  * calculation of concentration values 
 #'  * principal component filtration 
-#'  * signal drift/batch correction using statTarget package
+#'  * signal drift correction using statTarget package
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 subplot(master_list$pca_analysis$statTarget_corrected$sample_qc$plot_scores, master_list$pca_analysis$statTarget_corrected$plate$plot_scores)
