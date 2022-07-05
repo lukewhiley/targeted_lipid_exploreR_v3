@@ -55,7 +55,7 @@ for(idx_data in master_list$project_details$mzml_plate_list){
     rename(sample_name = file_name)
   
   #remove file extenstion (.mzML from sample_name)
-  master_list$data$transposed[[idx_data]]$sample_name <- sub("", ".mzML", master_list$data$transposed[[idx_data]]$sample_name)
+  master_list$data$transposed[[idx_data]]$sample_name <- sub(".mzML", "", master_list$data$transposed[[idx_data]]$sample_name)
   
   
   #make numeric 
