@@ -68,7 +68,7 @@ master_list$project_details$mzml_plate_list <- list.dirs(paste0(master_list$proj
                                                                 "/data/mzml"),
                                                          full.names = FALSE)
 
-master_list$project_details$mzml_plate_list <- master_list$project_details$mzml_plate_list[grep("plate_", master_list$project_details$mzml_plate_list)]
+#master_list$project_details$mzml_plate_list <- master_list$project_details$mzml_plate_list[grep("plate_", master_list$project_details$mzml_plate_list)]
 
 dlg_message(paste0("there are ", length(master_list$project_details$mzml_plate_list), " plates of samples"), type = 'ok')
 
