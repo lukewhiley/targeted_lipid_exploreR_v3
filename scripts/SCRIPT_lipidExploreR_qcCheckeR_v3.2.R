@@ -630,7 +630,7 @@ prelipid_RSD <- (100*prelipid_stDev)/prelipid_means
 
 master_list$summary_tables$batch_correction_overview <- list()
 master_list$summary_tables$batch_correction_overview <- bind_cols(
-  "data" = "pre_batch_correction",
+  "data" = "pre-statTarget signal correction",
   "total samples" = nrow(master_list$data$bind_plates$post_filter),
   "qc samples" = nrow(master_list$data$bind_plates$post_filter %>% filter(sample_type == "qc")),
   "study samples" = nrow(master_list$data$bind_plates$post_filter %>% filter(sample_type == "sample")),
@@ -684,7 +684,7 @@ postlipid_RSD <- (100*postlipid_stDev)/postlipid_means
 
 master_list$summary_tables$batch_correction_overview <- bind_rows(master_list$summary_tables$batch_correction_overview,
                                                                   bind_cols(
-                                                                    "data" = "post_batch_correction",
+                                                                    "data" = "post-statTarget signal correction",
                                                                     "total samples" = nrow(master_list$data$bind_plates$post_statTarget),
                                                                     "qc samples" = nrow(master_list$data$bind_plates$post_statTarget %>% filter(sample_type == "qc")),
                                                                     "study samples" = nrow(master_list$data$bind_plates$post_statTarget %>% filter(sample_type == "sample")),

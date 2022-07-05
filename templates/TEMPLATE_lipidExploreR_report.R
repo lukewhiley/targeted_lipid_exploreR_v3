@@ -27,7 +27,7 @@ knitr::kable(master_list$summary_tables$transposed_summary)
 #'
 #'
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-subplot(master_list$pca_output$data_sorted$sample_qc$plot_scores, master_list$pca_output$data_sorted$plate$plot_scores)
+subplot(master_list$pca_analysis$data_sorted$sample_qc$plot_scores, master_list$pca_analysis$data_sorted$plate$plot_scores)
 #'
 #'
 #' ***
@@ -47,7 +47,7 @@ knitr::kable(master_list$summary_tables$missing_value_filter_summary)
 #' * Note - metabolite targets that use these internal standards for calculation of response ratio and concentrations are also removed.
 #'
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-knitr::kable(master_list$summary_lists$missing_value_filter$failed_SIL %>% as_tibble() %>% rename(internal_standard = value))
+knitr::kable(master_list$process_lists$missing_value_filter$failed_SIL %>% as_tibble() %>% rename(internal_standard = value))
 #' 
 #' ***
 #' 
@@ -58,7 +58,7 @@ knitr::kable(master_list$summary_lists$missing_value_filter$failed_SIL %>% as_ti
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-subplot(master_list$pca_output$missing_value_filter$sample_qc$plot_scores, master_list$pca_output$missing_value_filter$plate$plot_scores)
+subplot(master_list$pca_analysis$missing_value_filter$sample_qc$plot_scores, master_list$pca_analysis$missing_value_filter$plate$plot_scores)
 #' 
 #' 
 #' ***
@@ -98,7 +98,7 @@ knitr::kable(master_list$summary_tables$concentration_summary)
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-subplot(master_list$pca_output$concentration$sample_qc$plot_scores, master_list$pca_output$concentration$plate$plot_scores)
+subplot(master_list$pca_analysis$concentration$sample_qc$plot_scores, master_list$pca_analysis$concentration$plate$plot_scores)
 #'
 #'
 #' ***
@@ -118,11 +118,11 @@ knitr::kable(master_list$summary_tables$pc_filter_summary)
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$pc_filter$PC1
+master_list$pc_runorder_plots$pre_filter$PC1$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$pc_filter$PC2
+master_list$pc_runorder_plots$pre_filter$PC2$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$pc_filter$PC3
+master_list$pc_runorder_plots$pre_filter$PC3$plotly
 #'
 #' ***
 #' 
@@ -136,7 +136,7 @@ master_list$pc_run_plot$pc_filter$PC3
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-subplot(master_list$pca_output$pc_filter$sample_qc$plot_scores, master_list$pca_output$pc_filter$plate$plot_scores)
+subplot(master_list$pca_analysis$pc_filter$sample_qc$plot_scores, master_list$pca_analysis$pc_filter$plate$plot_scores)
 #'
 #'
 #' ***
@@ -155,22 +155,22 @@ knitr::kable(master_list$summary_tables$batch_correction_overview)
 #' #### Run order plot: pre-statTarget correction
 #' Plot of run order vs principle components
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$pre_statTarget$PC1$plotly
+master_list$pc_runorder_plots$pre_statTarget$PC1$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$pre_statTarget$PC2$plotly
+master_list$pc_runorder_plots$pre_statTarget$PC2$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$pre_statTarget$PC3$plotly
+master_list$pc_runorder_plots$pre_statTarget$PC3$plotly
 #' 
 #' ***
 #' 
 #' #### Run order plot: post-statTarget correction
 #' Plot of run order vs principle components
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$post_statTarget$PC1$plotly
+master_list$pc_runorder_plots$post_statTarget$PC1$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$post_statTarget$PC2$plotly
+master_list$pc_runorder_plots$post_statTarget$PC2$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_run_plot$post_statTarget$PC3$plotly
+master_list$pc_runorder_plots$post_statTarget$PC3$plotly
 #'
 #' ***
 #' 
@@ -183,7 +183,7 @@ master_list$pc_run_plot$post_statTarget$PC3$plotly
 #' * signal drift/batch correction using statTarget package
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-subplot(master_list$pca_output$statTarget_corrected$sample_qc$plot_scores, master_list$pca_output$statTarget_corrected$plate$plot_scores)
+subplot(master_list$pca_analysis$statTarget_corrected$sample_qc$plot_scores, master_list$pca_analysis$statTarget_corrected$plate$plot_scores)
 #'
 #' 
 #' ***
@@ -198,6 +198,7 @@ print(master_list$environment$base_packages)
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 print(master_list$environment$user_packages)
 #' ***
+
 
 
 
