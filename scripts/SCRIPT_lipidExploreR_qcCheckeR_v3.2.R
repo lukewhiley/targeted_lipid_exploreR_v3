@@ -791,7 +791,15 @@ save(master_list,
        master_list$project_details$project_name, 
        ".rda"))
 
+# PROCESS: save final csv output ------------------------------------------------
 
+write_csv(x = master_list$data$bind_plates$post_statTarget,
+          file =paste0(
+            master_list$project_details$project_dir,
+            "/data/", Sys.Date(), 
+            "_qcCheckeRv3.2_", 
+            master_list$project_details$project_name, 
+            ".csv"))
 
 # PROCESS: render html report ---------------------------------------------
 
