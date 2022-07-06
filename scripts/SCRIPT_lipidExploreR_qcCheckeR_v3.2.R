@@ -71,7 +71,7 @@ for(idx_data in master_list$project_details$mzml_plate_list){
       "total samples" = nrow(master_list$data$transposed[[idx_data]]),
       "LTR samples" = length(grep("LTR",  master_list$data$transposed[[idx_data]]$sample_name)), #report number of LTRs in dataset
       "PQC samples" = length(grep("PQC",  master_list$data$transposed[[idx_data]]$sample_name)), #report number of PQC in dataset
-      "conditioning samples" = length(grep("COND", master_list$data$transposed$sample_name[[idx_data]])), #report number of conditioning runs in dataset
+      "conditioning samples" = length(grep("COND", master_list$data$transposed[[idx_data]]$sample_name)), #report number of conditioning runs in dataset
       "study samples"= nrow(master_list$data$transposed[[idx_data]])-
         length(grep("LTR", master_list$data$transposed[[idx_data]]$sample_name))- 
         length(grep("PQC", master_list$data$transposed[[idx_data]]$sample_name))-
