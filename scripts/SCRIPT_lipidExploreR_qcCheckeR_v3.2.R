@@ -122,7 +122,7 @@ for (idx_data in names(master_list$data$transposed)){
   
   #create metadata columns
   master_list$project_details$run_orders[[idx_data]]$sample_batch <- master_list$project_details$project_name # batch/project name
-  master_list$project_details$run_orders[[idx_data]]$sample_plate_id <- idx_data #plate_id
+  master_list$project_details$run_orders[[idx_data]]$sample_plate_id <- paste0(master_list$project_details$project_name, "_", idx_data) #plate_id
   master_list$project_details$run_orders[[idx_data]]$sample_plate_order <- c(1:nrow(master_list$project_details$run_orders[[idx_data]])) #sample_plate_order
   master_list$project_details$run_orders[[idx_data]]$sample_type <- "sample"
   #set sample_type to qc for all samples with the qc_type tag in their filename
