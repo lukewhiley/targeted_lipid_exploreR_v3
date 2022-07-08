@@ -666,7 +666,7 @@ save(master_list,
 write_csv(x = master_list$data$bind_plates$post_statTarget,
           file =paste0(
             master_list$project_details$project_dir,
-            "/data/", Sys.Date(), 
+            "/html_report/", Sys.Date(), 
             "_qcCheckeRv3.21_", 
             master_list$project_details$project_name, 
             ".csv"))
