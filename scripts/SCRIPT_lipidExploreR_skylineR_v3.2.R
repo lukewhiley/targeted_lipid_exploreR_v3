@@ -134,7 +134,9 @@ dlg_message("1. Please open skylineMS software", type = 'ok');dlg_message("2. Cr
 #re_import skyline file
 master_list$data$skyline_reports$report_1 <- read_csv(file = paste0(list.files(
   paste0(master_list$project_details$project_dir, "/data/skyline"),
-  pattern = "xskylineR_1", full.names = TRUE)), show_col_types = FALSE)
+  pattern = "xskylineR_1", full.names = TRUE)), show_col_types = FALSE) %>% mutate_at(
+    vars("Precursor Mz", "Product Mz", "Retention Time", "Start Time", "End Time", "Area", "Height"), 
+    as.numeric) 
 
 #perform peak boundary update
 master_list$templates$mrm_guides$mrm_guide_pb_update <- list()
@@ -160,7 +162,10 @@ dlg_message("1. Please return to skylineMS software", type = 'ok'); dlg_message(
 #re_import skyline file
 master_list$data$skyline_reports$report_2 <- read_csv(file = paste0(list.files(
   paste0(master_list$project_details$project_dir, "/data/skyline"),
-  pattern = "xskylineR_2", full.names = TRUE)), show_col_types = FALSE) %>% clean_names()
+  pattern = "xskylineR_2", full.names = TRUE)), show_col_types = FALSE) %>% mutate_at(
+    vars("recursor Mz", "Product Mz", "Retention Time", "Start Time", "End Time", "Area", "Height"), 
+    as.numeric) %>%
+  clean_names()
 
 #create directory for exporting rda files
 if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/rda"))){
