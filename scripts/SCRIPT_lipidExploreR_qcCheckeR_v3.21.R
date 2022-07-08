@@ -489,7 +489,7 @@ master_list$pca_analysis$concentration$plate <- master_list$environment$user_fun
 # PLOT: pca filter runorder vs pc -----------------------------------------
 #prepare data 
 
-master_list$data$bind_plates$post_filter <- master_list$data$concentration %>%
+master_list$data$bind_plates$pre_statTarget <- master_list$data$concentration %>%
   bind_rows() %>% 
   add_column(sample_idx = seq(1:nrow(bind_rows(master_list$data$concentration))),
              sample_fail = (bind_rows(master_list$data$concentration))[["sample_type"]],
@@ -500,23 +500,23 @@ rm(list = c(ls()[which(ls() != "master_list")]))
 
 # TABLE: Pre-batch correction summary table -------------------------------
 
-prelipid_stDev <- colSds(master_list$data$bind_plates$post_filter %>% filter(sample_type == "qc") %>% select(!contains("sample")) %>% as.matrix())
-prelipid_means <- colMeans2(master_list$data$bind_plates$post_filter %>% filter(sample_type == "qc") %>% select(!contains("sample")) %>% as.matrix())
+prelipid_stDev <- colSds(master_list$data$bind_plates$pre_statTarget %>% filter(sample_type == "qc") %>% select(!contains("sample")) %>% as.matrix())
+prelipid_means <- colMeans2(master_list$data$bind_plates$pre_statTarget %>% filter(sample_type == "qc") %>% select(!contains("sample")) %>% as.matrix())
 prelipid_RSD <- (100*prelipid_stDev)/prelipid_means
 
 master_list$summary_tables$batch_correction_overview <- list()
 master_list$summary_tables$batch_correction_overview <- bind_cols(
   "data" = "pre-statTarget signal correction",
-  "total samples" = nrow(master_list$data$bind_plates$post_filter),
-  "qc samples" = nrow(master_list$data$bind_plates$post_filter %>% filter(sample_type == "qc")),
-  "study samples" = nrow(master_list$data$bind_plates$post_filter %>% filter(sample_type == "sample")),
-  "total features" = ncol(master_list$data$bind_plates$post_filter %>% select(!contains("sample"))),
+  "total samples" = nrow(master_list$data$bind_plates$pre_statTarget),
+  "qc samples" = nrow(master_list$data$bind_plates$pre_statTarget %>% filter(sample_type == "qc")),
+  "study samples" = nrow(master_list$data$bind_plates$pre_statTarget %>% filter(sample_type == "sample")),
+  "total features" = ncol(master_list$data$bind_plates$pre_statTarget %>% select(!contains("sample"))),
   "features < 30% qcRSD" = length(which(prelipid_RSD < 30)),
   "features < 20% qcRSD" = length(which(prelipid_RSD < 20)),
   "features < 10% qcRSD" = length(which(prelipid_RSD < 10)),
-  "zero values" = length(which(master_list$data$bind_plates$post_filter %>% select(!contains("sample"))==0)),
-  "NA values remaining" = length(which(is.na(as.matrix(master_list$data$bind_plates$post_filter %>% select(!contains("sample")))))), #find NAs
-  "NaN values remaining" = length(which(is.nan(as.matrix(master_list$data$bind_plates$post_filter %>% select(!contains("sample"))))))#find 0 values
+  "zero values" = length(which(master_list$data$bind_plates$pre_statTarget %>% select(!contains("sample"))==0)),
+  "NA values remaining" = length(which(is.na(as.matrix(master_list$data$bind_plates$pre_statTarget %>% select(!contains("sample")))))), #find NAs
+  "NaN values remaining" = length(which(is.nan(as.matrix(master_list$data$bind_plates$pre_statTarget %>% select(!contains("sample"))))))#find 0 values
 )
 
 
@@ -538,8 +538,8 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/batch_corr
 master_list$data$bind_plates$post_statTarget <- master_list$environment$user_functions$signal_correct$value(
   FUNC_project_directory = paste0(master_list$project_details$project_dir,
                                   "/data/batch_correction"),
-  FUNC_data = master_list$data$bind_plates$post_filter,
-  FUNC_metabolite_list = master_list$data$bind_plates$post_filter %>%
+  FUNC_data = master_list$data$bind_plates$pre_statTarget,
+  FUNC_metabolite_list = master_list$data$bind_plates$pre_statTarget %>%
     select(-contains("sample")) %>% names(),
   FUNC_header_sample_id = "sample_name",
   FUNC_header_batch = "sample_plate_id",
@@ -615,8 +615,8 @@ master_list$pca_analysis$statTarget_corrected$plate <- master_list$environment$u
 
 master_list$pc_runorder_plots$pre_statTarget <- list()
 master_list$pc_runorder_plots$pre_statTarget <- master_list$environment$user_functions$pc_run_plot$value(
-  FUNC_data = master_list$data$bind_plates$post_filter,
-  FUNC_metabolite_list = master_list$data$bind_plates$post_filter %>%
+  FUNC_data = master_list$data$bind_plates$pre_statTarget,
+  FUNC_metabolite_list = master_list$data$bind_plates$pre_statTarget %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_type_factor_rev",
   FUNC_plot_label = "sample_name",
