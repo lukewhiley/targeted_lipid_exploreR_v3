@@ -62,7 +62,7 @@ IMPORTANT INFORMATION PRIOR TO USING:
 -->
 
 
-```{r lipid_exploreR, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+```{r lipidQC_exploreR, eval = TRUE, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 #### load packages
 package_list <- c('svDialogs', 'plyr', 'tidyverse', 'ggpubr', 'janitor', 'shiny', 'plotly', 'statTarget', 'metabom8', 'knitr', 'viridisLite', 'mzR', 'httr', 'cowplot', 'matrixStats')
