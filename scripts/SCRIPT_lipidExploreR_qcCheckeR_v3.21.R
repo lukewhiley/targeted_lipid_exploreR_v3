@@ -667,9 +667,9 @@ write_csv(x = master_list$data$bind_plates$post_statTarget,
           file =paste0(
             master_list$project_details$project_dir,
             "/html_report/", Sys.Date(), 
-            "_qcCheckeRv3.21_", 
+            "_", 
             master_list$project_details$project_name, 
-            ".csv"))
+            "_qcCheckeRv3.21.csv"))
 
 # PROCESS: render html report ---------------------------------------------
 
