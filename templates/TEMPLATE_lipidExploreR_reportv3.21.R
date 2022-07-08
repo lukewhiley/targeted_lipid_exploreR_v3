@@ -110,11 +110,11 @@ subplot(master_list$pca_analysis$concentration$sample_qc$plot_scores, master_lis
 #' 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_runorder_plots$pre_filter$PC1$plotly
+master_list$pc_runorder_plots$pre_statTarget$PC1$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_runorder_plots$pre_filter$PC2$plotly
+master_list$pc_runorder_plots$pre_statTarget$PC2$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_runorder_plots$pre_filter$PC3$plotly
+master_list$pc_runorder_plots$pre_statTarget$PC3$plotly
 #'
 #' ***
 #' 
