@@ -131,17 +131,6 @@ knitr::kable(master_list$summary_tables$batch_correction_overview)
 #' 
 #' ***
 #' 
-#' ### Plot: Run order vs PC scores: post-statTarget signal drift correction
-#' 
-#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_runorder_plots$post_statTarget$PC1$plotly
-#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_runorder_plots$post_statTarget$PC2$plotly
-#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
-master_list$pc_runorder_plots$post_statTarget$PC3$plotly
-#'
-#' ***
-#' 
 #' ### Plot: PCA scores: post-signal drift/batch correction 
 #' PCA scores plot displaying data that has undergone the following process steps: 
 #' 
@@ -154,6 +143,20 @@ master_list$pc_runorder_plots$post_statTarget$PC3$plotly
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 subplot(master_list$pca_analysis$statTarget_corrected$sample_qc$plot_scores, master_list$pca_analysis$statTarget_corrected$plate$plot_scores)
+#'
+#'
+#' 
+#' ***
+#' 
+#' 
+#' ### Plot: Run order vs PC scores: post-statTarget signal drift correction
+#' 
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+master_list$pc_runorder_plots$post_statTarget$PC1$plotly
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+master_list$pc_runorder_plots$post_statTarget$PC2$plotly
+#+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
+master_list$pc_runorder_plots$post_statTarget$PC3$plotly
 #'
 #' 
 #' ***
@@ -170,9 +173,5 @@ print(master_list$environment$base_packages)
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 print(master_list$environment$user_packages)
 #' ***
-
-
-
-
 
 
