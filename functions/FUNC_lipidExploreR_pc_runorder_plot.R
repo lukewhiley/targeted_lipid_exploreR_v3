@@ -51,8 +51,11 @@ lgw_pc_run_plot <- function(FUNC_data,
 
   plot_Val <- as_tibble(cbind(PC1, PC2, PC3, FUNC_data$sample_idx, FUNC_data$sample_name,  FUNC_data$sample_type, FUNC_data$sample_plate_id)) %>% 
     setNames(c("PC1", "PC2", "PC3", "sample_idx", "sample_name", "sample_type", "sample_plate_id"))
+  #add file_name to sample_idx for plotly plot label
   plot_Val$sample_idx <- c(1:nrow(plot_Val)) %>% as.numeric()
-  plot_Val$sample_idx <- paste0(plot_Val$sample_idx, "_", plot_Val$sample_name)
+  #create factor to control plot order
+  plot_Val$sample_idx <- paste0(plot_Val$sample_idx, "_", plot_Val$sample_name) %>%
+    factor(ordered = TRUE, levels = paste0(plot_Val$sample_idx, "_", plot_Val$sample_name))
   plot_Val$PC1 <- plot_Val$PC1 %>% as.numeric()
   plot_Val$PC2 <- plot_Val$PC2 %>% as.numeric()
   plot_Val$PC3 <- plot_Val$PC3 %>% as.numeric()
