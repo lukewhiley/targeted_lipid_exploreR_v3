@@ -107,7 +107,12 @@ subplot(master_list$pca_analysis$concentration$sample_qc$plot_scores, master_lis
 #' 
 #' 
 #' ### Plot: Run order vs PC scores: pre-statTarget signal drift correction
+#' Run order vs PC scores plot displaying data that has undergone the following process steps: 
 #' 
+#'  * missing value filtering 
+#'  * imputation of remaining missing values 
+#'  * calculation of response ratios (target analyte peak area/internal standard peak area) 
+#'  * calculation of concentration values 
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 master_list$pc_runorder_plots$pre_statTarget$PC1$plotly
@@ -138,7 +143,6 @@ knitr::kable(master_list$summary_tables$batch_correction_overview)
 #'  * imputation of remaining missing values 
 #'  * calculation of response ratios (target analyte peak area/internal standard peak area) 
 #'  * calculation of concentration values 
-#'  * principal component filtration 
 #'  * signal drift correction using statTarget package
 #' 
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
@@ -151,6 +155,15 @@ subplot(master_list$pca_analysis$statTarget_corrected$sample_qc$plot_scores, mas
 #' 
 #' ### Plot: Run order vs PC scores: post-statTarget signal drift correction
 #' 
+#' Run order vs PC scores plot displaying data that has undergone the following process steps: 
+#' 
+#'  * missing value filtering 
+#'  * imputation of remaining missing values 
+#'  * calculation of response ratios (target analyte peak area/internal standard peak area) 
+#'  * calculation of concentration values 
+#'  * signal drift correction using statTarget package
+#'  
+#'  
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
 master_list$pc_runorder_plots$post_statTarget$PC1$plotly
 #+ echo=FALSE, message=FALSE, fig.width=10, fig.height=5
