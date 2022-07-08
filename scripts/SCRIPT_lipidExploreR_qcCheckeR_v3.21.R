@@ -416,7 +416,9 @@ for(idx_data in names(master_list$data$impute)){
     FUNC_metabolite_list = master_list$data$impute[[idx_data]] %>% 
       select(!contains("sample")) %>% names(),
     FUNC_SIL_guide = master_list$templates$SIL_guide,
-    FUNC_conc_guide = master_list$templates$conc_guide)
+    FUNC_conc_guide = master_list$templates$conc_guide) %>%
+    #ensure no SIL metabolites remain in dataset
+    select(!contains("SIL"))
   
   # TABLE: summary table of data following response ratio and concentration calculation ----------------------------
   
@@ -426,7 +428,7 @@ for(idx_data in names(master_list$data$impute)){
                 "total samples" = master_list$data$concentration[[idx_data]] %>% nrow(),
                 "qc samples" = master_list$data$concentration[[idx_data]] %>% filter(grepl('qc', sample_type)) %>% nrow(), #report number of QCs remaining in dataset
                 "study samples" = master_list$data$concentration[[idx_data]] %>% filter(grepl('sample', sample_type)) %>% nrow(), #report number of samples in dataset
-                "features" = master_list$data$concentration[[idx_data]] %>% select(-contains("sample")) %>% select(-contains("SIL")) %>% ncol(),
+                "features" = master_list$data$concentration[[idx_data]] %>% select(!contains("sample")) %>% select(-contains("SIL")) %>% ncol(),
                 "zero values remaining" = length(which(master_list$data$concentration[[idx_data]] %>% select(!contains("sample"))==0)), #find 0 values
                 "NA values remaining" = length(which(is.na(as.matrix(master_list$data$concentration[[idx_data]] %>% select(!contains("sample")))))), #find NAs
                 "NaN values remaining" = length(which(is.nan(as.matrix(master_list$data$concentration[[idx_data]] %>% select(!contains("sample")))))) # find NANs
