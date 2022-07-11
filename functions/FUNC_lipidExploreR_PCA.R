@@ -64,7 +64,7 @@ lgw_pca <- function(FUNC_data,
   #scores plot label
   pca_plot_label <- FUNC_data %>% 
     select(all_of(FUNC_plot_label)) %>% 
-    as.matrix()
+    as.matrix() %>% c()
   
   # create plot values
   plot_Val <- as_tibble(cbind(PC1, PC2))
