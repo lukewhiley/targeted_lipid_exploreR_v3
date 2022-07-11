@@ -201,6 +201,7 @@ master_list$data$missing_value_filter <- list()
 master_list$process_lists$missing_value_filter <- list()
 master_list$process_lists$missing_value_filter$failed_SIL <- NULL
 master_list$summary_tables$missing_value_filter_summary <- list()
+master_list$summary_tables$missing_value_qc_fail <- list()
 
 
 for(idx_data in names(master_list$data$sorted)){
@@ -315,7 +316,7 @@ master_list$summary_tables$missing_value_filter_summary <- rbind(master_list$sum
 
 #set empty table if all plates pass mising value qc threshold
 
-if (nrow(master_list$summary_tables$missing_value_qc_fail) == 0){master_list$summary_tables$missing_value_qc_fail <- "No plates were removed"} 
+if (length(master_list$summary_tables$missing_value_qc_fail) == 0){master_list$summary_tables$missing_value_qc_fail <- "No plates were removed"} 
 
 # PROCESS: select data features that are common for all plates ------------
 
