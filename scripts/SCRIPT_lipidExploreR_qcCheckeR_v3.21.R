@@ -313,7 +313,9 @@ master_list$summary_tables$missing_value_filter_summary <- rbind(master_list$sum
                                                                    sum(master_list$summary_tables$missing_value_filter_summary$`NaN values remaining`)))
 
 
+#set empty table if all plates pass mising value qc threshold
 
+if (nrow(master_list$summary_tables$missing_value_qc_fail) == 0){master_list$summary_tables$missing_value_qc_fail <- "No plates were removed"} 
 
 # PROCESS: select data features that are common for all plates ------------
 
