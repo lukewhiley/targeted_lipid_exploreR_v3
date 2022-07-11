@@ -71,11 +71,11 @@ for(idx_data in master_list$project_details$mzml_plate_list){
       "total samples" = nrow(master_list$data$transposed[[idx_data]]),
       "LTR samples" = length(grep("LTR",  master_list$data$transposed[[idx_data]]$sample_name)), #report number of LTRs in dataset
       "PQC samples" = length(grep("PQC",  master_list$data$transposed[[idx_data]]$sample_name)), #report number of PQC in dataset
-      "conditioning samples" = length(grep("COND", master_list$data$transposed[[idx_data]]$sample_name)), #report number of conditioning runs in dataset
+      "conditioning samples" = length(grep("cond", master_list$data$transposed[[idx_data]]$sample_name, ignore.case = TRUE)), #report number of conditioning runs in dataset
       "study samples"= nrow(master_list$data$transposed[[idx_data]])-
         length(grep("LTR", master_list$data$transposed[[idx_data]]$sample_name))- 
         length(grep("PQC", master_list$data$transposed[[idx_data]]$sample_name))-
-        length(grep("COND", master_list$data$transposed[[idx_data]]$sample_name)), #report number of study samples in dataset
+        length(grep("cond", master_list$data$transposed[[idx_data]]$sample_name, ignore.case = TRUE)), #report number of study samples in dataset
       "total features" = ncol(master_list$data$transposed[[idx_data]] %>% 
                                 select(-contains("sample"))),
       "zero values" = length(which(master_list$data$transposed[[idx_data]] %>% select(!contains("sample"))==0)),
@@ -131,7 +131,8 @@ for (idx_data in names(master_list$data$transposed)){
     master_list$project_details$run_orders[[idx_data]]$sample_name)] <- "qc"
   #set sample_type to conditioning for all samples with the COND tag in their filename
   master_list$project_details$run_orders[[idx_data]]$sample_type[grep(
-    "COND", master_list$project_details$run_orders[[idx_data]]$sample_name)] <- "conditioning"
+    "cond", master_list$project_details$run_orders[[idx_data]]$sample_name,
+    ignore.case = TRUE)] <- "conditioning"
   
   #sort transposed data by run order and then remove conditioning runs
   master_list$data$sorted[[idx_data]] <- master_list$project_details$run_orders[[idx_data]] %>%
