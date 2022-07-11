@@ -17,7 +17,7 @@ master_list$project_details$lipidExploreR_version <- "3.2"
 #set user
 master_list$project_details$user_name <- dlgInput("user", "example_initials")$res
 #set project name
-master_list$project_details$project_name <- dlgInput("project", paste0(master_list$project_details$project_dir))$res
+master_list$project_details$project_name <- dlgInput("project", basename(paste0(master_list$project_details$project_dir)))$res
 #set qc-type
 master_list$project_details$qc_type <- dlgInput("qc type used - tag MUST be in filename of mzML files (matched case)", "LTR/SR/PQC")$res
 #create summary table for report
