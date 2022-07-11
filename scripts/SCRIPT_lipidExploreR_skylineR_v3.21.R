@@ -163,7 +163,7 @@ dlg_message("1. Please return to skylineMS software", type = 'ok'); dlg_message(
 master_list$data$skyline_reports$report_2 <- read_csv(file = paste0(list.files(
   paste0(master_list$project_details$project_dir, "/data/skyline"),
   pattern = "xskylineR_2", full.names = TRUE)), show_col_types = FALSE) %>% mutate_at(
-    vars("recursor Mz", "Product Mz", "Retention Time", "Start Time", "End Time", "Area", "Height"), 
+    vars("Precursor Mz", "Product Mz", "Retention Time", "Start Time", "End Time", "Area", "Height"), 
     as.numeric) %>%
   clean_names()
 
