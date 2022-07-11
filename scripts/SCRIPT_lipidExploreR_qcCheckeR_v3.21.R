@@ -276,6 +276,23 @@ for(idx_data in names(master_list$data$sorted)){
                                                                  master_list$process_lists$missing_value_filter[[idx_data]]$feature_fail_list[grep("SIL", master_list$process_lists$missing_value_filter[[idx_data]]$feature_fail_list)]) %>%
     unique()
   
+  #remove plate where > 1/3rds of QCs have failed the missing value filter
+  #Step 1 - find qcs that pass plate:
+  qc_pass <- master_list$data$missing_value_filter[[idx_data]] %>% filter(grepl('qc', sample_type)) %>% nrow()
+  total_qc <- master_list$data$sorted[[idx_data]] %>% filter(grepl('qc', sample_type)) %>% nrow()
+  
+  
+  if(qc_pass < floor(total_qc * 0.66)){
+    #save fail plate for report
+    master_list$summary_tables$missing_value_qc_fail <- master_list$summary_tables$missing_value_qc_fail %>%
+      bind_rows(
+        master_list$summary_tables$missing_value_filter_summary %>% filter(batch == idx_data)
+      )
+    
+    #remove plate from future steps in process
+    master_list$data$missing_value_filter[[idx_data]] <- NULL
+  }
+  
 }
 
 master_list$summary_tables$missing_value_filter_summary <- rbind(master_list$summary_tables$missing_value_filter_summary ,
