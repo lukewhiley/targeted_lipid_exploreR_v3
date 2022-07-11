@@ -39,7 +39,7 @@ subplot(master_list$pca_analysis$data_sorted$sample_qc$plot_scores, master_list$
 knitr::kable(master_list$summary_tables$missing_value_filter_summary)
 #'
 #'
-#'#' ***
+#' ***
 #' 
 #' 
 #' The following plates were removed as too many QC samples failed the missing value filter. 
