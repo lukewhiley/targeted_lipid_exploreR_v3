@@ -319,7 +319,6 @@ master_list$summary_tables$missing_value_filter_summary <- rbind(master_list$sum
 if (length(master_list$summary_tables$missing_value_qc_fail) == 0){master_list$summary_tables$missing_value_qc_fail <- "No plates were removed"} 
 
 # PROCESS: select data features that are common for all plates ------------
-
 master_list$data$common_metabolite_filter <- list()
 
 #step 1: find common features
