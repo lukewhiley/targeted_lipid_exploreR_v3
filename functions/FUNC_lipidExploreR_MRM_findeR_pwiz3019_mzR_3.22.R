@@ -37,6 +37,7 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
     mzml_rt_start_out <- NULL
     mzml_rt_end_out <- NULL
     for(idx_mzML in mzML_filelist_qc){
+      print(idx_mzML)
       #find the mzR mzML file from list
       for(idx_plate in names(FUNC_mzR)){
         if(length(grep(idx_mzML, names(FUNC_mzR[[idx_plate]]))) == 1){
@@ -48,8 +49,16 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
           #only complete the below if idx_mrm_channel finds a single unique match
           if(length(idx_mrm_channel) ==1){
             
+            FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2] %>% plot(main = paste0(idx_mzML))
+            
             # find baseline of transition window
-            baseline_value <- (FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2] %>% summary())[["1st Qu."]] +1
+            baseline_value <- FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2] %>% 
+              median()
+            
+            if(baseline_value < 1){
+              baseline_value <- FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2] %>%
+                mean()
+            }
             
             #find scan indeces
             
@@ -58,17 +67,47 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
               FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2]
             )
             
+            #re-calculate and re-centre if in wings of window
+            if(peak_apex_idx < 5 |
+               peak_apex_idx > (length(FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2])-5)){
+              peak_apex_idx <-  which.max(
+                (FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2])[5:(length(FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2])-5)]
+              )+4
+            }
+            
             #2. find scan index of peak start time
-            peak_start_idx <- (which(
-              (FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2]) > baseline_value
-            ) %>% min()) - 1
+            peak_start <- which(
+              (FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2]) < baseline_value
+            )
+            
+            # identify scan index where peak returns to baseline after peak apex
+            peak_start_idx <- peak_start[which(peak_start < peak_apex_idx)][(length(which(peak_start < peak_apex_idx)))-3]
+            
+            #if peak_start_idx is beyond idx range set at 1.
+            if(length(peak_start_idx) == 0){
+              peak_start_idx <- 1
+            }
+            if(peak_start_idx < 1){
+              peak_start_idx <- 1
+            }
+            
             
             #3. find scan index of peak end time (first point peak reaches baseline after peak apex)
             peak_end <- which(
               (FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2]) < baseline_value
             )
             # identify scan index where peak returns to baseline after peak apex
-            peak_end_idx <- peak_end[which(peak_end > peak_apex_idx)][1]
+            peak_end_idx <- peak_end[which(peak_end > peak_apex_idx)][3]
+            
+            #browser()
+            #if peak_start_idx is beyond idx range set at max length of scan index
+            if(length(peak_end_idx) == 0){
+              peak_end_idx <- length(FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2])
+            }
+            if(peak_end_idx > length(FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2]) |
+               is.na(peak_end_idx)==TRUE){
+              peak_end_idx <- length(FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2])
+            }
             
             
             #find retention times according to scan indices
@@ -99,6 +138,11 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
     
     #update RT for the import guide
     if(length(mzml_rt_apex_out) > 0){
+      
+      
+      print(paste0(FUNC_mrm_guide$precursor_name[[idx_mrm]], ": peak apex = ", median(mzml_rt_apex_out)))
+      
+      
       mzml_median_rt <- median(mzml_rt_apex_out)
       FUNC_mrm_guide$explicit_retention_time[idx_mrm] <- round(mzml_median_rt, 2)
     }
@@ -106,25 +150,30 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
     
     #create peak boundary table
     if(length(mzml_rt_start_out) > 0){
+      
+      print(paste0(FUNC_mrm_guide$precursor_name[[idx_mrm]], ": peak start = ", min(mzml_rt_start_out)))
+      print(paste0(FUNC_mrm_guide$precursor_name[[idx_mrm]], ": peak end = ", max(mzml_rt_end_out)))
+      
+      
       FUNC_output$peak_boundary_update[[FUNC_output$mrm_guide_updated$precursor_name[[idx_mrm]]]] <- mzML_filelist %>% 
         as_tibble() %>% 
         dplyr::rename(FileName = value) %>%
         add_column("FullPeptideName" = rep(FUNC_output$mrm_guide_updated$precursor_name[[idx_mrm]],
                                            length(mzML_filelist))
         ) %>%
-        add_column("MinStartTime" = rep(min(mzml_rt_start_out),
+        add_column("MinStartTime" = rep((mzml_rt_start_out %>% summary)[["1st Qu."]],
                                         length(mzML_filelist))
         )  %>% 
-        add_column("MaxEndTime" = rep(max(mzml_rt_end_out),
+        add_column("MaxEndTime" = rep((mzml_rt_end_out %>% summary)[["3rd Qu."]],
                                       length(mzML_filelist))
         )
       
     }
     
-    
+    #browser()
     
   }
   #output final table
   FUNC_output$mrm_guide_updated <- FUNC_mrm_guide
-  FUNC_output$peak_boundary_update <- bind_rows(FUNC_output$peak_boundary_update)
+  FUNC_output$peak_boundary_update_2 <- bind_rows(FUNC_output$peak_boundary_update)
 }
