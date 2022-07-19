@@ -71,8 +71,8 @@ master_list$project_details$mzml_plate_list <- list.dirs(paste0(master_list$proj
 
 dlg_message(paste0("there are ", length(master_list$project_details$mzml_plate_list), " plates of samples"), type = 'ok')
 
-#import mzML
-mzml_filelist <- list()
+# PROCESS: IMPORT mzML FILES USING mzR ------------------------------------
+mzml_filelist <- list() 
 plate_list <- NULL
 for(idx_plate in master_list$project_details$mzml_plate_list){
   mzml_filelist[[idx_plate]] <- list.files(paste0(master_list$project_details$project_dir, 
@@ -85,7 +85,7 @@ for(idx_plate in master_list$project_details$mzml_plate_list){
 }
 
 dlg_message(plate_list, type = 'ok')
-temp_mzR_list = list()
+master_list$project_details$mzml_sample_list <- NULL
 for(idx_plate in master_list$project_details$mzml_plate_list){
   master_list$data$mzR[[idx_plate]] <- list()
   #read in mzML files using mzR
@@ -99,7 +99,7 @@ for(idx_plate in master_list$project_details$mzml_plate_list){
     master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram <- mzR::chromatograms(master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object)
     master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_timestamp <- master_list$data$mzR[[idx_plate]][[idx_mzML]]$mzR_object@backend$getRunStartTimeStamp()
   }
-  temp_mzR_list <- c(temp_mzR_list, master_list$data$mzR[[idx_plate]])
+  master_list$project_details$mzml_sample_list <- c(master_list$project_details$mzml_sample_list, names(master_list$data$mzR[[idx_plate]]))
 }
 
 #######
