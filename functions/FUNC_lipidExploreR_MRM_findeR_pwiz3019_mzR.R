@@ -1,5 +1,5 @@
 # RT findeR
-mzR_mrm_findR <- function(FUNC_mzR, #list for each sample containing $mzR_object; $mzR_header; $mzR_chromatogram
+mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR object for each sample; $mzR_header; $mzR_chromatogram
                           FUNC_mrm_guide, #tibble of mrm details
                           FUNC_OPTION_qc_type #qc_type used in the experiment LTR; PQC; none
                           
