@@ -21,9 +21,6 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
   #list mzR objects matching qc type
   mzML_filelist_qc <- mzML_filelist[grep(FUNC_OPTION_qc_type, mzML_filelist)]
   
-  
-  
-  
   # PROCESS: Find peak apex and boundaries using QC mzR (mzML) data ------------
   
   #this section finds peak start, end and apex using mzR data for the QC samples. Will be applied later to skyline.
