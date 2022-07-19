@@ -18,11 +18,9 @@ rt_find <- NULL
     #for each mrm transtion in the transition data
 for (idx_mrm in 1:nrow(FUNC_mrm_guide)){
       # find precursor reference
-      precursor_mz <- FUNC_mrm_guide$precursor_mz[idx_mrm] %>% 
-        round(2) 
+      precursor_mz <- FUNC_mrm_guide$precursor_mz[idx_mrm] 
       #find product ion reference
-      product_mz <- FUNC_mrm_guide$product_mz[idx_mrm] %>% 
-        round(2) 
+      product_mz <- FUNC_mrm_guide$product_mz[idx_mrm] 
       
       #find transition in each mzML file and find median peak apex
       mzml_rt_apex_out <- NULL
