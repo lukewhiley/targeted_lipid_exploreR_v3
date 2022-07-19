@@ -109,10 +109,10 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
     
     #create peak boundary table
     if(length(mzml_rt_start_out) > 0){
-      FUNC_output$peak_boundary_update[[FUNC_output$mrm_guide_updated$`Precursor Name`[[idx_mrm]]]] <- mzML_filelist %>% 
+      FUNC_output$peak_boundary_update[[FUNC_output$mrm_guide_updated$precursor_name[[idx_mrm]]]] <- mzML_filelist %>% 
         as_tibble() %>% 
         dplyr::rename(FileName = value) %>%
-        add_column("FullPeptideName" = rep(FUNC_output$mrm_guide_updated$`Precursor Name`[[idx_mrm]],
+        add_column("FullPeptideName" = rep(FUNC_output$mrm_guide_updated$precursor_name[[idx_mrm]],
                                            length(mzML_filelist))
         ) %>%
         add_column("MinStartTime" = rep(min(mzml_rt_start_out),
