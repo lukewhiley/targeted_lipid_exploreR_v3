@@ -108,7 +108,7 @@ master_list$templates$mrm_guides$mrm_guide_rt_update <- tibble()
 
 #run function
 master_list$templates$mrm_guides$mrm_guide_rt_update <- master_list$environment$user_functions$mrm_RT_findeR_mzR$value(
-  FUNC_mzR = temp_mzR_list, #list for each sample containing $mzR_object; $mzR_header; $mzR_chromatogram
+  FUNC_mzR = master_list$data$mzR, #list for each sample containing $mzR_object; $mzR_header; $mzR_chromatogram
   FUNC_mrm_guide = master_list$templates$mrm_guides$mrm_guide %>% clean_names(),
   FUNC_OPTION_qc_type = master_list$project_details$qc_type)
 
