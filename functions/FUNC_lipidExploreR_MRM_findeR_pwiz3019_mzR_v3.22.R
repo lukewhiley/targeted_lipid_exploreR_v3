@@ -162,9 +162,9 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
                                                bind_cols(
                                                  "Molecule List Name" = (FUNC_tibble %>% filter(lipid == idx_lipid))[["lipid_class"]] %>% unique(),
                                                  "Precursor Name" = idx_lipid,
-                                                 "Precursor Mz" = (FUNC_tibble %>% filter(lipid == idx_lipid))[["precursor_mz"]] %>% unique(),
+                                                 "Precursor Mz" = (FUNC_mrm_guide %>% filter(precursor_name == idx_lipid))[["precursor_mz"]],
                                                  "Precursor Charge" = (FUNC_mrm_guide %>% filter(precursor_name == idx_lipid))[["precursor_charge"]],
-                                                 "Product Mz" = (FUNC_tibble %>% filter(lipid == idx_lipid))[["product_mz"]] %>% unique(),
+                                                 "Product Mz" = (FUNC_mrm_guide %>% filter(precursor_name == idx_lipid))[["product_mz"]],
                                                  "Product Charge" = (FUNC_mrm_guide %>% filter(precursor_name == idx_lipid))[["product_charge"]],
                                                  "Explicit Retention Time" = (FUNC_tibble %>% filter(lipid == idx_lipid))[["peak_apex"]] %>% median(),
                                                  "Explicit Retention Time Window" = (FUNC_mrm_guide %>% filter(precursor_name == idx_lipid))[["explicit_retention_time_window"]],
