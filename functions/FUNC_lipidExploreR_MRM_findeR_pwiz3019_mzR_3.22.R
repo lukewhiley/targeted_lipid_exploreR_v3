@@ -49,7 +49,8 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
           #only complete the below if idx_mrm_channel finds a single unique match
           if(length(idx_mrm_channel) ==1){
             
-            FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2] %>% plot(main = paste0(idx_mzML))
+            #plot peak in R
+            #FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2] %>% plot(main = paste0(idx_mzML))
             
             # find baseline of transition window
             baseline_value <- FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2] %>% 

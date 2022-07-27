@@ -104,7 +104,7 @@ for(idx_plate in master_list$project_details$mzml_plate_list){
 
 #######
 # Retention time optimiser
-master_list$templates$mrm_guides <- list()
+# master_list$templates$mrm_guides <- list()
 
 #run function
 master_list$templates$mrm_guides <- master_list$environment$user_functions$mrm_RT_findeR_mzR$value(
