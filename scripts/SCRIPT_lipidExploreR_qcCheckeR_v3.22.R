@@ -46,7 +46,7 @@ master_list$summary_tables$transposed_summary <- list()
 
 for(idx_data in master_list$project_details$mzml_plate_list){
   master_list$data$transposed[[idx_data]] <- pivot_wider(
-    data = master_list$data$skyline_reports$report_2 %>%
+    data = master_list$data$skyline_report %>%
       filter(file_name %in% names(master_list$data$mzR[[idx_data]])),
     id_cols = file_name,
     names_from = molecule_name,
