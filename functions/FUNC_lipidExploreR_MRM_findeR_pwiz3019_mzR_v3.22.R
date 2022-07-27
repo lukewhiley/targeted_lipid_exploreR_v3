@@ -1,7 +1,3 @@
-FUNC_mzR = master_list$data$mzR #list for each sample containing $mzR_object; $mzR_header; $mzR_chromatogram
-FUNC_mrm_guide = master_list$templates$mrm_guides$mrm_guide %>% clean_names()
-FUNC_OPTION_qc_type = master_list$project_details$qc_type
-
 
 # RT findeR
 mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR object for each sample; $mzR_header; $mzR_chromatogram
@@ -158,6 +154,7 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
   
   
   FUNC_output$mrm_guide_updated <- tibble()
+  FUNC_output$peak_boundary_update <- tibble()
   
   for(idx_lipid in unique(FUNC_tibble$lipid)){
     
@@ -173,17 +170,33 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
                                                  "Explicit Retention Time Window" = (FUNC_mrm_guide %>% filter(precursor_name == idx_lipid))[["explicit_retention_time_window"]],
                                                  "Note" = (FUNC_mrm_guide %>% filter(precursor_name == idx_lipid))[["note"]]
                                                ))
+    
+    
+    FUNC_output$peak_boundary_update <- bind_rows(FUNC_output$peak_boundary_update,
+                                                  bind_cols(
+                                                    "FileName" = mzML_filelist,
+                                                    "FullPeptideName" =  rep(idx_lipid, length(mzML_filelist)),
+                                                    "MinStartTime" = rep(
+                                                      ((FUNC_tibble %>% filter(lipid == idx_lipid))[["peak_start"]] %>% summary())[["1st Qu."]], 
+                                                      length(mzML_filelist)
+                                                    ),
+                                                    "MaxEndTime" =  rep(
+                                                      ((FUNC_tibble %>% filter(lipid == idx_lipid))[["peak_start"]] %>% summary())[["3rd Qu."]], 
+                                                      length(mzML_filelist)
+                                                    )
+                                                  )
+    )
+                                                  
+                                                  
   }
   
   FUNC_output$mrm_guide_updated <-  FUNC_output$mrm_guide_updated %>% dplyr::arrange(`Precursor Name`)
   
-  FUNC_output$peak_boundary_update <- bind_cols(
-    "FileName" = FUNC_tibble$mzml,
-    "FullPeptideName" =  FUNC_tibble$lipid,
-    "MinStartTime" = FUNC_tibble$peak_start,
-    "MaxEndTime" = FUNC_tibble$peak_end
-  ) %>% arrange(`FullPeptideName`)
+  FUNC_output$peak_boundary_update <- FUNC_output$peak_boundary_update %>% arrange(`FullPeptideName`)
   
   FUNC_output    
   
 }
+
+
+
