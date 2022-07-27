@@ -13,7 +13,7 @@ master_list$environment$user_packages <- paste0(names(sessionInfo()$otherPkgs), 
 #set project details
 dlg_message("select project directory", type = 'ok');master_list$project_details$project_dir <- rstudioapi::selectDirectory()
 #set lipidExploreR version
-master_list$project_details$lipidExploreR_version <- "3.2"
+master_list$project_details$lipidExploreR_version <- "3.22"
 #set user
 master_list$project_details$user_name <- dlgInput("user", "example_initials")$res
 #set project name
@@ -55,7 +55,7 @@ master_list$templates$mrm_guides$mrm_guide <- read_csv(
 #RT finder
 master_list$environment$user_functions$mrm_RT_findeR_mzR <- source(paste0(
   master_list$project_details$github_master_dir , 
-  "/functions/FUNC_lipidExploreR_MRM_findeR_pwiz3019_mzR_3.22.R"))
+  "/functions/FUNC_lipidExploreR_MRM_findeR_pwiz3019_mzR_v3.22.R"))
 
 #peak_boundary findeR
 master_list$environment$user_functions$mrm_pb_findeR <- source(paste0(
