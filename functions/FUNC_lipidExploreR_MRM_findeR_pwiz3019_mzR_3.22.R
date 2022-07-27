@@ -37,7 +37,7 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
     mzml_rt_start_out <- NULL
     mzml_rt_end_out <- NULL
     for(idx_mzML in mzML_filelist_qc){
-      print(idx_mzML)
+      #print(idx_mzML)
       #find the mzR mzML file from list
       for(idx_plate in names(FUNC_mzR)){
         if(length(grep(idx_mzML, names(FUNC_mzR[[idx_plate]]))) == 1){
@@ -140,7 +140,7 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
     if(length(mzml_rt_apex_out) > 0){
       
       
-      print(paste0(FUNC_mrm_guide$precursor_name[[idx_mrm]], ": peak apex = ", median(mzml_rt_apex_out)))
+      #print(paste0(FUNC_mrm_guide$precursor_name[[idx_mrm]], ": peak apex = ", median(mzml_rt_apex_out)))
       
       
       mzml_median_rt <- median(mzml_rt_apex_out)
@@ -151,8 +151,8 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
     #create peak boundary table
     if(length(mzml_rt_start_out) > 0){
       
-      print(paste0(FUNC_mrm_guide$precursor_name[[idx_mrm]], ": peak start = ", min(mzml_rt_start_out)))
-      print(paste0(FUNC_mrm_guide$precursor_name[[idx_mrm]], ": peak end = ", max(mzml_rt_end_out)))
+      #print(paste0(FUNC_mrm_guide$precursor_name[[idx_mrm]], ": peak start = ", min(mzml_rt_start_out)))
+      #print(paste0(FUNC_mrm_guide$precursor_name[[idx_mrm]], ": peak end = ", max(mzml_rt_end_out)))
       
       
       FUNC_output$peak_boundary_update[[FUNC_output$mrm_guide_updated$precursor_name[[idx_mrm]]]] <- mzML_filelist %>% 
