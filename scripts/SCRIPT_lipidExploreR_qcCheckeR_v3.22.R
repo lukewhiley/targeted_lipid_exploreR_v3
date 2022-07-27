@@ -689,23 +689,23 @@ write_csv(x = master_list$data$bind_plates$post_statTarget,
             "/html_report/", Sys.Date(), 
             "_", 
             master_list$project_details$project_name, 
-            "_qcCheckeRv3.21.csv"))
+            "_qcCheckeRv3.22.csv"))
 
 # PROCESS: render html report ---------------------------------------------
 
-fileConn<-file(paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_templatev3.21.R"))
-writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/templates/TEMPLATE_lipidExploreR_reportv3.21.R")) %>%
+fileConn<-file(paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_templatev3.22.R"))
+writeLines(httr::GET(url = paste0(master_list$project_details$github_master_dir, "/templates/TEMPLATE_lipidExploreR_report_v3.22.R")) %>%
              httr::content(as = "text"), fileConn)
 close(fileConn)
 
 
-rmarkdown::render(input = paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_templatev3.21.R"),
+rmarkdown::render(input = paste0(master_list$project_details$project_dir, "/html_report/lipid_exploreR_report_templatev3.22.R"),
                   output_format = "html_document",
                   output_dir = paste0(master_list$project_details$project_dir, "/html_report"),
-                  output_file = paste0(Sys.Date(), "_", master_list$project_details$project_name, "_lipidExploreR_qcCheckeR_reportv3.21.html")
+                  output_file = paste0(Sys.Date(), "_", master_list$project_details$project_name, "_lipidExploreR_qcCheckeR_report_v3.22.html")
 )
 
 browseURL(url = paste0(master_list$project_details$project_dir, 
                        "/html_report/",
-                       Sys.Date(), "_", master_list$project_details$project_name, "_lipidExploreR_qcCheckeR_reportv3.21.html")
+                       Sys.Date(), "_", master_list$project_details$project_name, "_lipidExploreR_qcCheckeR_report_v3.22.html")
 )
