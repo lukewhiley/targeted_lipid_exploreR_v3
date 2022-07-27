@@ -175,5 +175,7 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
   }
   #output final table
   FUNC_output$mrm_guide_updated <- FUNC_mrm_guide
-  FUNC_output$peak_boundary_update_2 <- bind_rows(FUNC_output$peak_boundary_update)
+  FUNC_output$peak_boundary_update <- bind_rows(FUNC_output$peak_boundary_update)
+  
+  FUNC_output
 }
