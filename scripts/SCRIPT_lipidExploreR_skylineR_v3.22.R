@@ -57,11 +57,6 @@ master_list$environment$user_functions$mrm_RT_findeR_mzR <- source(paste0(
   master_list$project_details$github_master_dir , 
   "/functions/FUNC_lipidExploreR_MRM_findeR_pwiz3019_mzR_v3.22.R"))
 
-#peak_boundary findeR
-master_list$environment$user_functions$mrm_pb_findeR <- source(paste0(
-  master_list$project_details$github_master_dir, 
-  "/functions/FUNC_lipidExploreR_peak_boundary_findeR.R"))
-
 dlg_message("convert SCIEX files to mzML", type = 'ok'); dlg_message(paste0("mzML directory: [", paste0(master_list$project_details$project_dir, "/data/mzml"), "]"), type = 'ok'); dlg_message("put mzML files in sub folders per plate [/data/mzml/plate_1; /data/mzml/plate_2] etc")
 
 master_list$project_details$mzml_plate_list <- list.dirs(paste0(master_list$project_details$project_dir, 
