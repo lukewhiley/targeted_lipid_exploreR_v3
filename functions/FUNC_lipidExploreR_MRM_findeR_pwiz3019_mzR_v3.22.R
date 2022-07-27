@@ -181,7 +181,7 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
                                                       length(mzML_filelist)
                                                     ),
                                                     "MaxEndTime" =  rep(
-                                                      ((FUNC_tibble %>% filter(lipid == idx_lipid))[["peak_start"]] %>% summary())[["3rd Qu."]], 
+                                                      ((FUNC_tibble %>% filter(lipid == idx_lipid))[["peak_end"]] %>% summary())[["3rd Qu."]], 
                                                       length(mzML_filelist)
                                                     )
                                                   )
