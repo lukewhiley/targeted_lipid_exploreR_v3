@@ -80,6 +80,7 @@ for(idx_plate in master_list$project_details$mzml_plate_list){
 }
 
 dlg_message(plate_list, type = 'ok')
+
 master_list$project_details$mzml_sample_list <- NULL
 for(idx_plate in master_list$project_details$mzml_plate_list){
   master_list$data$mzR[[idx_plate]] <- list()
