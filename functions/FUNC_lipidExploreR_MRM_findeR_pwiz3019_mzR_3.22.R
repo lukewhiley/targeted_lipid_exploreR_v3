@@ -28,9 +28,12 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
   #for each mrm transtion in the transition data
   for (idx_mrm in 1:nrow(FUNC_mrm_guide)){
     # find precursor reference
-    precursor_mz <- FUNC_mrm_guide$precursor_mz[idx_mrm]
+    precursor_mz <- FUNC_mrm_guide$precursor_mz[idx_mrm] 
     #find product ion reference
     product_mz <- FUNC_mrm_guide$product_mz[idx_mrm]
+    #find template retention time reference
+    template_rt <- FUNC_mrm_guide$explicit_retention_time[idx_mrm]
+    
     
     #find transition in each mzML file and find median peak apex
     mzml_rt_apex_out <- NULL
@@ -41,16 +44,47 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
       #find the mzR mzML file from list
       for(idx_plate in names(FUNC_mzR)){
         if(length(grep(idx_mzML, names(FUNC_mzR[[idx_plate]]))) == 1){
+          
           #find the data channel in the mzml file containing the data
           idx_mrm_channel <- which(
-            FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_header$precursorIsolationWindowTargetMZ == precursor_mz &
-              FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_header$productIsolationWindowTargetMZ == product_mz
-          )
-          #only complete the below if idx_mrm_channel finds a single unique match
-          if(length(idx_mrm_channel) ==1){
+            FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_header$precursorIsolationWindowTargetMZ > (precursor_mz - 0.25) &
+              FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_header$precursorIsolationWindowTargetMZ < (precursor_mz + 0.25) &
+              FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_header$productIsolationWindowTargetMZ > (product_mz - 0.25) &
+              FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_header$productIsolationWindowTargetMZ < (product_mz + 0.25)
             
-            #plot peak in R
-            #FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2] %>% plot(main = paste0(idx_mzML))
+          )
+          
+          #remove multiple matches (using retention time window match)
+          if(length(idx_mrm_channel) == 0 &
+             idx_mzML == mzML_filelist_qc[1]){
+            print(paste("precursor = ", precursor_mz, "; product = ",product_mz, "; no MRM matches", sep = ""))
+          } 
+          
+          if(length(idx_mrm_channel ) > 1 &
+             #only print for 1 file per project loop
+             idx_mzML == mzML_filelist_qc[1]){
+            print(paste("precursor = ", precursor_mz, "; product = ",product_mz, "; multiple MRM matches -  channels = ", paste(idx_mrm_channel, collapse = " "), sep = ""))
+          }
+          
+          if(length(idx_mrm_channel) > 1){
+            for(idx_rt in idx_mrm_channel){
+              if(template_rt > (FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_rt]]$time %>% min()) &
+                 template_rt < (FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_rt]]$time %>% max())){
+                idx_mrm_channel <- idx_rt
+              }
+              
+            }
+            
+            #only print for 1 file per project loop
+            if(idx_mzML == mzML_filelist_qc[1]){print(paste("channel selected based on RT estimate = ", idx_mrm_channel, sep = ""))
+              #Sys.sleep(5)
+            }
+          }
+          
+          
+          
+          # complete the below once the idx_mrm_channel has a single unique match
+          if(length(idx_mrm_channel) ==1){
             
             # find baseline of transition window
             baseline_value <- FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm_channel]][,2] %>% 
@@ -157,8 +191,8 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
       
       
       FUNC_output$peak_boundary_update[[FUNC_output$mrm_guide_updated$precursor_name[[idx_mrm]]]] <- mzML_filelist %>% 
-        as_tibble() %>% 
-        dplyr::rename(FileName = value) %>%
+        as_tibble() %>% a
+      dplyr::rename(FileName = value) %>%
         add_column("FullPeptideName" = rep(FUNC_output$mrm_guide_updated$precursor_name[[idx_mrm]],
                                            length(mzML_filelist))
         ) %>%
@@ -174,9 +208,11 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
     #browser()
     
   }
-  #output final table
+  #prepare output final table
   FUNC_output$mrm_guide_updated <- FUNC_mrm_guide
   FUNC_output$peak_boundary_update <- bind_rows(FUNC_output$peak_boundary_update)
   
+  #output
   FUNC_output
 }
+
