@@ -55,7 +55,7 @@ master_list$templates$mrm_guides$mrm_guide <- read_csv(
 #RT finder
 master_list$environment$user_functions$mrm_RT_findeR_mzR <- source(paste0(
   master_list$project_details$github_master_dir , 
-  "/functions/FUNC_lipidExploreR_MRM_findeR_pwiz3019_mzR.R"))
+  "/functions/FUNC_lipidExploreR_MRM_findeR_pwiz3019_mzR_3.22.R"))
 
 #peak_boundary findeR
 master_list$environment$user_functions$mrm_pb_findeR <- source(paste0(
@@ -111,60 +111,40 @@ master_list$templates$mrm_guides <- master_list$environment$user_functions$mrm_R
   FUNC_mrm_guide = master_list$templates$mrm_guides$mrm_guide %>% clean_names(),
   FUNC_OPTION_qc_type = master_list$project_details$qc_type) %>% append(master_list$templates$mrm_guides)
 
-#set names so that skyline recognises columns
-master_list$templates$mrm_guides$mrm_guide_rt_update <- setNames(master_list$templates$mrm_guides$mrm_guide_rt_update,
-                                                       names(master_list$templates$mrm_guides$mrm_guide))
-
-rm(temp_mzR_list)
-
-#export updated optimised RT times
-write_csv(x = master_list$templates$mrm_guides$mrm_guide_rt_update,
-          file = paste0(master_list$project_details$project_dir, "/data/skyline/", Sys.Date(), "_RT_update_", 
-                        master_list$project_details$project_name, ".csv"))
+#set names from original template so that skyline recognises columns
+master_list$templates$mrm_guides$mrm_guide_updated <- setNames(master_list$templates$mrm_guides$mrm_guide_updated,
+                                                               names(master_list$templates$mrm_guides$mrm_guide))
 
 #create directory for storing skyline exports
 if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/skyline"))){
   dir.create(paste0(master_list$project_details$project_dir, "/data/skyline"))
 }
 
-#interact with skyline
-dlg_message("1. Please open skylineMS software", type = 'ok');dlg_message("2. Create new small molecule file", type = 'ok'); dlg_message("3. Import the [skylineR_RT_update.csv] transition list located in [~project_directory/data/skyline] folder. In Skyline navigate to File -> import -> transition list", type = 'ok'); dlg_message("4. Save project", type = 'ok'); dlg_message("5. Import mzml data files for processing by navigating to File -> import -> results", type = 'ok'); dlg_message("6. Let skyline process.  Export results to [~project_directory/data/skyline] folder with the tag xskylineR_1.  Export reports must have the following headings: File Name, Molecule List Name, Molecule Name, Area, Retention Time, Start Time and End Time", type = 'ok'); 
+#export updated optimised RT times
+write_csv(x = master_list$templates$mrm_guides$mrm_guide_updated,
+          file = paste0(master_list$project_details$project_dir, "/data/skyline/", Sys.Date(), "_RT_update_", 
+                        master_list$project_details$project_name, ".csv"))
 
-#re_import skyline file
-master_list$data$skyline_reports$report_1 <- read_csv(file = paste0(list.files(
-  paste0(master_list$project_details$project_dir, "/data/skyline"),
-  pattern = "xskylineR_1", full.names = TRUE)), show_col_types = FALSE) %>% mutate_at(
-    vars("Precursor Mz", "Product Mz", "Retention Time", "Start Time", "End Time", "Area", "Height"), 
-    as.numeric) 
-
-#perform peak boundary update
-master_list$templates$mrm_guides$mrm_guide_pb_update <- list()
-for(idx_plate in master_list$project_details$mzml_plate_list){
-  master_list$templates$mrm_guides$mrm_guide_pb_update[[idx_plate]] <- master_list$environment$user_functions$mrm_pb_findeR$value(
-    FUNC_data = master_list$data$skyline_reports$report_1 %>% 
-      clean_names() %>%
-      filter(file_name %in% names(master_list$data$mzR[[idx_plate]])),
-    FUNC_OPTION_qc_type = master_list$project_details$qc_type
-  )
-}
-#bind all rows into master pb list
-master_list$templates$mrm_guides$mrm_guide_pb_update_all_plates <- bind_rows(master_list$templates$mrm_guides$mrm_guide_pb_update)
-
-#write peak boundary output
-write_csv(x = master_list$templates$mrm_guides$mrm_guide_pb_update_all_plates,
+#export peak boundary output
+write_csv(x = master_list$templates$mrm_guides$peak_boundary_update,
           file = paste0(master_list$project_details$project_dir, "/data/skyline/", Sys.Date(), "_peak_boundary_update_", 
                         master_list$project_details$project_name, ".csv"))
 
-dlg_message("1. Please return to skylineMS software", type = 'ok'); dlg_message("2. Import the new skylineR_boundary_update.csv transition list from csv file by navigating to File -> import -> peak boundaries", type = 'ok'); dlg_message("4. Save project", type = 'ok');dlg_message("5. Export results to [~project_directory/data/skyline] folder with the tag xskylineR_2.  Export reports must have the following headings: File Name, Molecule List Name, Molecule Name, Area, Retention Time, Start Time and End Time", type = 'ok'); dlg_message("7. Now return to R Studio and run the lipid_exploreR to QC check data", type = 'ok')
 
-#import processed skyline_data
+#interact with skyline
+#1 - import peak boundaries and raw data
+dlg_message("1. Please open skylineMS software", type = 'ok');dlg_message("2. Create new small molecule file", type = 'ok'); dlg_message("3. Import the [skylineR_RT_update.csv] transition list located in [~project_directory/data/skyline] folder. In Skyline navigate to File -> import -> transition list", type = 'ok'); dlg_message("4. Save project", type = 'ok'); dlg_message("5. Import mzml data files for processing by navigating to File -> import -> results", type = 'ok')
+#2 - update peak boundaries
+dlg_message("6. Import the new skylineR_boundary_update.csv transition list from csv file by navigating to File -> import -> peak boundaries", type = 'ok'); dlg_message("7. Save project", type = 'ok');dlg_message("8. Export results to [~project_directory/data/skyline] folder with the tag xskylineR.  Export reports must have the following headings: File Name, Molecule List Name, Molecule Name, Area, Retention Time, Start Time and End Time", type = 'ok'); dlg_message("9. Now return to R Studio and run the lipid_exploreR to QC check data", type = 'ok')
+
+
 #re_import skyline file
-master_list$data$skyline_reports$report_2 <- read_csv(file = paste0(list.files(
+master_list$data$skyline_report <- read_csv(file = paste0(list.files(
   paste0(master_list$project_details$project_dir, "/data/skyline"),
-  pattern = "xskylineR_2", full.names = TRUE)), show_col_types = FALSE) %>% mutate_at(
+  pattern = "xskylineR", full.names = TRUE)), show_col_types = FALSE) %>% mutate_at(
     vars("Precursor Mz", "Product Mz", "Retention Time", "Start Time", "End Time", "Area", "Height"), 
-    as.numeric) %>%
-  clean_names()
+    as.numeric) 
+
 
 #create directory for exporting rda files
 if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/rda"))){
