@@ -77,8 +77,8 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
             
             #only print for 1 file per project loop
             if(idx_mzML == mzML_filelist_qc[1]){print(paste("channel selected based on RT estimate = ", idx_mrm_channel, sep = ""))
-              #Sys.sleep(5)
             }
+            
           }
           
           
