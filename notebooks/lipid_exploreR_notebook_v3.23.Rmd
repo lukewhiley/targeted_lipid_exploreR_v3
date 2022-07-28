@@ -1,5 +1,5 @@
 ---
-title: "Lipid exploreR v3.22"
+title: "Lipid exploreR v3.23"
 output:
   html_document:
     df_print: paged
@@ -39,7 +39,7 @@ for(idx_package in package_list){
   }
 }
 
-skylineR_script <- GET(url = paste0("https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/scripts/SCRIPT_lipidExploreR_skylineR_v3.22.R")) %>% 
+skylineR_script <- GET(url = paste0("https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/scripts/SCRIPT_lipidExploreR_skylineR_v3.23.R")) %>% 
   content(as = "text")
 
 eval(parse(text = skylineR_script), envir = .GlobalEnv)
@@ -78,7 +78,7 @@ for(idx_package in package_list){
   }
 }
 
-qcCheckR_script <- GET(url = paste0("https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/scripts/SCRIPT_lipidExploreR_qcCheckeR_v3.22.R")) %>% 
+qcCheckR_script <- GET(url = paste0("https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/scripts/SCRIPT_lipidExploreR_qcCheckeR_v3.23.R")) %>% 
   content(as = "text")
 
 eval(parse(text = qcCheckR_script), envir = .GlobalEnv)
