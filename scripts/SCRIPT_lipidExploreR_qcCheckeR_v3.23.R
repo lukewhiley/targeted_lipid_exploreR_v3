@@ -443,7 +443,7 @@ statTarget_data <- master_list$environment$user_functions$signal_correct$value(
 )
 
 #assign data to plate list
-for(idx_data in names(master_list$data$statTarget)){
+for(idx_data in names(master_list$data$impute)){
   master_list$data$statTarget[[idx_data]] <- statTarget_data %>% filter(sample_plate_id == idx_data) %>% select(-sample_idx)
   
   # TABLE: summary table of statTarget data ----------------------------
