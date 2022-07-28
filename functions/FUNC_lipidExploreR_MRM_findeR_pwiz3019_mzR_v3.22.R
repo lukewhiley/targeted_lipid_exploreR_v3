@@ -115,12 +115,15 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
           )
           
           if(length(lipid_idx) > 1){
-            print(paste("multiple matches for precursor =", precursor_mz, "; product =", product_mz, "; retention time =", mzml_rt_apex, "; transitions", paste(lipid_idx, collapse = " ")))
+            #only print multiple matches for first file
+            if(idx_mzML == mzML_filelist_qc[1]){print(paste("multiple matches for precursor =", precursor_mz, "; product =", product_mz, "; retention time =", mzml_rt_apex, "; transitions", paste(lipid_idx, collapse = " ")))}
             lipid_class <- "multiple match"
             lipid <- "multiple match"
           }
           
           if(length(lipid_idx) == 0){
+            #only print multiple matches for first file
+            if(idx_mzML == mzML_filelist_qc[1]){print(paste("no match for precursor =", precursor_mz, "; product =", product_mz, "; retention time =", mzml_rt_apex, "; transitions"))}
             lipid_class <- "no match"
             lipid <- "no match"
           }
