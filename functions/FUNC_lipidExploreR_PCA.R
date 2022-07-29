@@ -15,33 +15,30 @@ lgw_pca <- function(FUNC_data,
                     FUNC_option_invert_y,
                     FUNC_option_invert_x,
                     FUNC_option_plot_qc){
-  require(metabom8)
-  #require(RColorBrewer)
-  require(tidyverse)
-  require(plotly)
   
   pca_output <- list()
   
-  #browser()
-  
   title_text <- FUNC_title
+  
+  qc_idx <- which(FUNC_data[["sample_type"]] == "qc")
   
   if(FUNC_option_plot_qc == FALSE){
     FUNC_data <- FUNC_data %>% 
       filter(sample_type != "qc")
   }
   
+  
   #create data matrix for PCA
-  pca_x <- FUNC_data %>%  select(all_of(FUNC_metabolite_list)) %>% as.matrix()
+  pca_x <- FUNC_data %>%  select(all_of(FUNC_metabolite_list)) %>% as.matrix() 
   pca_x[pca_x == 0] <- NA #remove all 0 values (above adds 1 to all values therefore anything that = 1 was a 0)
   pca_x[is.infinite(pca_x)] <- NA #remove all infinite values
   min_value <- min(pca_x, na.rm = TRUE) # find the lowest value in the matrix
   pca_x[is.na(pca_x)] <- min_value/100 # replace all NA, Inf, and 0 values with the lowest value in the matrix/100 to represent a value below limit of detection
   
-  pca_x <- log(pca_x) #log values for plotting
+  pca_x <- log(pca_x+1) #log values for plotting
   
   #create PCA model
-  pca_output$pca_model <- pca(pca_x, pc=2, scale = paste(FUNC_scaling), center = TRUE)
+  pca_output$pca_model <- pca(pca_x, pc=3, scale = paste(FUNC_scaling), center = TRUE)
   
   # extract score values for plotting in plot_ly
   PC1 <- as.numeric(as.matrix(pca_output$pca_model@t[,1]))
@@ -178,7 +175,6 @@ lgw_pca <- function(FUNC_data,
                title = paste0(FUNC_title, "\n", nrow(plot_Val), " samples; ", nrow(plotly_loadings_data), " features")
   )
   
-
   pca_output
 
 }

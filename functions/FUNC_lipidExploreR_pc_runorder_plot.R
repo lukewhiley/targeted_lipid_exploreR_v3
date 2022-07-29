@@ -15,9 +15,6 @@ lgw_pc_run_plot <- function(FUNC_data,
                     FUNC_option_point_size,
                     FUNC_option_plot_qc
                     ){
-  require(metabom8)
-  require(tidyverse)
-  require(plotly)
   
   pca_output <- list()
   pca_output$plots <- list()
