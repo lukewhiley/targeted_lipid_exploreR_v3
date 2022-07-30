@@ -1,4 +1,3 @@
-
 # PROCESS: Welcome section and project set up --------------------------------------
 
 #welcome messages
@@ -744,7 +743,7 @@ master_list$pca_analysis$concentration_rsd_filtered$sample_qc <- master_list$env
 
 #run pca loop color by plate
 master_list$pca_analysis$concentration_rsd_filtered$plate <- master_list$environment$user_functions$pca$value(
-  FUNC_data = master_list$data$concentration_statTarget_rsd_filter,
+  FUNC_data = master_list$data$concentration_rsd_filter,
   FUNC_metabolite_list = master_list$data$concentration_rsd_filter %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_plate_id",
@@ -797,8 +796,8 @@ master_list$pca_analysis$concentration_statTarget_rsd_filtered$plate <- master_l
 #raw impute data
 master_list$pc_runorder_plots$pre_statTarget <- list()
 master_list$pc_runorder_plots$pre_statTarget <- master_list$environment$user_functions$pc_run_plot$value(
-  FUNC_data = master_list$data$concentration_bind_plates,
-  FUNC_metabolite_list = master_list$data$concentration_bind_plates %>%
+  FUNC_data = master_list$data$concentration_rsd_filter,
+  FUNC_metabolite_list = master_list$data$concentration_rsd_filter %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_type_factor_rev",
   FUNC_plot_label = "sample_name",
@@ -812,8 +811,8 @@ master_list$pc_runorder_plots$pre_statTarget <- master_list$environment$user_fun
 #statTarget data
 master_list$pc_runorder_plots$post_statTarget <- list()
 master_list$pc_runorder_plots$post_statTarget <- master_list$environment$user_functions$pc_run_plot$value(
-  FUNC_data = master_list$data$concentration_statTarget_bind_plates,
-  FUNC_metabolite_list = master_list$data$concentration_statTarget_bind_plates %>%
+  FUNC_data = master_list$data$concentration_statTarget_rsd_filter,
+  FUNC_metabolite_list = master_list$data$concentration_statTarget_rsd_filter %>%
     select(-contains("sample")) %>% names(),
   FUNC_colour_by = "sample_type_factor_rev",
   FUNC_plot_label = "sample_name",
