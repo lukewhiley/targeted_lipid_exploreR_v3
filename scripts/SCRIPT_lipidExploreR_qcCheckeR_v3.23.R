@@ -842,7 +842,7 @@ save(master_list,
 
 # PROCESS: save final csv output ------------------------------------------------
 
-write_csv(x = master_list$data$concentration_statTarget_bind_plates,
+write_csv(x = master_list$data$concentration_statTarget_rsd_filter,
           file =paste0(
             master_list$project_details$project_dir,
             "/html_report/", Sys.Date(), 
