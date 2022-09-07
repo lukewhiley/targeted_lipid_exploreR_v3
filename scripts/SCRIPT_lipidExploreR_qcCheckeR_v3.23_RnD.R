@@ -33,6 +33,7 @@ master_list$environment$user_functions$pc_run_plot <- source(paste0(master_list$
 
 #set version of lipidExploreR used
 master_list$project_details$qcCheckR_version <- "3.23_RnD"
+master_list$summary_tables$project_summary$value[[2]] <- "3.23_RnD"
 
 
 # PROCESS: transpose data to standard metabolomics structure (features in columns, samples in rows) -------------------------------------- 
