@@ -546,10 +546,6 @@ master_list$summary_tables$batch_correction_overview <- bind_rows(
   )
 )
 
-# PROCESS: create final datasets (remove lipids > 30% RSD) -----------------------------------------
-#raw imputed data
-master_list$data$concentration_rsd_filter <- master_list$data$concentration_bind_plates %>% select(!contains(prelipid_RSD_fail))
-
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 
@@ -629,7 +625,16 @@ write_csv(x = master_list$data$concentration_rsd_filter,
             "/html_report/", Sys.Date(), 
             "_", 
             master_list$project_details$project_name, 
-            "_qcCheckeR_v3.23_RnD.csv"))
+            "_qcCheckeR_v3.23_RnD_rsd_filtered_data.csv"))
+
+
+write_csv(x = master_list$data$concentration_bind_plates,
+          file =paste0(
+            master_list$project_details$project_dir,
+            "/html_report/", Sys.Date(), 
+            "_", 
+            master_list$project_details$project_name, 
+            "_qcCheckeR_v3.23_RnD_all_data.csv"))
 
 # PROCESS: render html report ---------------------------------------------
 
