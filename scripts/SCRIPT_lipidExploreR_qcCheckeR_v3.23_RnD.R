@@ -618,6 +618,13 @@ save(master_list,
        ".rda"))
 
 # PROCESS: save final csv output ------------------------------------------------
+write_csv(x = master_list$data$impute,
+          file =paste0(
+            master_list$project_details$project_dir,
+            "/html_report/", Sys.Date(), 
+            "_", 
+            master_list$project_details$project_name, 
+            "_qcCheckeR_v3.23_RnD_peak_areas_only.csv"))
 
 write_csv(x = master_list$data$concentration_rsd_filter,
           file =paste0(
