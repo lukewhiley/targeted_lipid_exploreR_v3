@@ -111,7 +111,7 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
             )
           
           #relax tolerances if first match fails or gets multiple hits - e.g. isomer with same MRM transition, introduces RT thresholds
-          if(length(lipid_idx != 1)){
+          if(length(lipid_idx) != 1){
           lipid_idx <- which(
             FUNC_mrm_guide$precursor_mz > (precursor_mz - 0.25) &
               FUNC_mrm_guide$precursor_mz < (precursor_mz + 0.25) &
