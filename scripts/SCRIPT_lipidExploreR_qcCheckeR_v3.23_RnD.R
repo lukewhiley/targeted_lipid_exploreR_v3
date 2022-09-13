@@ -622,7 +622,7 @@ save(master_list,
        ".rda"))
 
 # PROCESS: save final csv output ------------------------------------------------
-write_csv(x = master_list$data$impute,
+write_csv(x = master_list$data$impute %>% bind_rows(),
           file =paste0(
             master_list$project_details$project_dir,
             "/html_report/", Sys.Date(), 
