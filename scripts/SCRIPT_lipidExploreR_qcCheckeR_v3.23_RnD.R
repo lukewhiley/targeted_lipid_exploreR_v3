@@ -546,6 +546,10 @@ master_list$summary_tables$batch_correction_overview <- bind_rows(
   )
 )
 
+# PROCESS: create final datasets (remove lipids > 30% RSD) -----------------------------------------
+#raw imputed data
+master_list$data$concentration_rsd_filter <- master_list$data$concentration_bind_plates %>% select(!contains(prelipid_RSD_fail))
+
 #clean environment
 rm(list = c(ls()[which(ls() != "master_list")]))
 
