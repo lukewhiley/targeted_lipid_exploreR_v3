@@ -106,6 +106,13 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
           
           #find target lipid name and family from mrm_guide
           lipid_idx <- which(
+            FUNC_mrm_guide$precursor_mz == precursor_mz &
+              FUNC_mrm_guide$product_mz == product_mz
+            )
+          
+          #relax tolerances if first match fails or gets multiple hits - e.g. isomer with same MRM transition, introduces RT thresholds
+          if(length(lipid_idx != 1)){
+          lipid_idx <- which(
             FUNC_mrm_guide$precursor_mz > (precursor_mz - 0.25) &
               FUNC_mrm_guide$precursor_mz < (precursor_mz + 0.25) &
               FUNC_mrm_guide$product_mz > (product_mz - 0.25) &
@@ -113,6 +120,7 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
               FUNC_mrm_guide$explicit_retention_time > (min(FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm]]$time)-0.1)&
               FUNC_mrm_guide$explicit_retention_time < (max(FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm]]$time)+0.1)
           )
+          }
           
           if(length(lipid_idx) > 1){
             #only print multiple matches for first file
