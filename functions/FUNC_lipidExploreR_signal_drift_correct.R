@@ -31,12 +31,9 @@ lgw_signal_correction <- function(FUNC_project_directory,
                                   FUNC_option_method,
                                   FUNC_option_coCV
 ){
-  
-  require(statTarget)
-  #browser()
+
   #create directories for use later
-  #dir.create(paste(FUNC_project_directory))
-  
+
   if(!dir.exists(paste0(FUNC_project_directory, "/", Sys.Date(), "_signal_correction_results"))){
     dir.create(paste(FUNC_project_directory, "/", Sys.Date(), "_signal_correction_results", sep=""))
   }
