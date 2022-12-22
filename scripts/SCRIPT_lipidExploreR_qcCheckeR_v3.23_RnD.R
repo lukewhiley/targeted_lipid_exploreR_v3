@@ -228,7 +228,7 @@ for(idx_data in names(master_list$data$sorted)){
       FUNC_IS_tag = "SIL",
       FUNC_OPTION_missing_value_threshold_sample = 1, #decimal % of missing value threshold before sample is removed from dataset
       FUNC_OPTION_missing_value_threshold_feature = 0.50, #decimal % of missing value threshold before feature is removed from dataset
-      FUNC_OPTION_intensity_threshold = 5000)
+      FUNC_OPTION_intensity_threshold = 500)
     
   }
   
