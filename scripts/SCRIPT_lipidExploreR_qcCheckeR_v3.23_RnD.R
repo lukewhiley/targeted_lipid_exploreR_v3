@@ -420,14 +420,29 @@ master_list$summary_tables$impute_table <- rbind(master_list$summary_tables$impu
 
 #prepare template/guides for concentration for calculation
 master_list$templates <- list()
-master_list$templates$SIL_guide <- read_csv(
-  file = "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template.csv",
-  show_col_types = FALSE) %>%
-  clean_names()
-master_list$templates$conc_guide <- read_csv(
-  file = "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_SIL_batch_103.csv", 
-  show_col_types = FALSE) %>% 
-  clean_names()
+#if using sciex lipidizer internal standards
+if(master_list$project_details$is_ver == "v1"){
+  master_list$templates$SIL_guide <- read_csv(
+    file = "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template_v1.csv",
+    show_col_types = FALSE) %>%
+    clean_names()
+  master_list$templates$conc_guide <- read_csv(
+    file = "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_SIL_batch_103.csv", 
+    show_col_types = FALSE) %>% 
+    clean_names()
+}
+
+#if using ultra splash mix (ANPC method v2)
+if(master_list$project_details$is_ver == "v2"){
+  master_list$templates$SIL_guide <- read_csv(
+    file = "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_lipid_mrm_template_v2.csv",
+    show_col_types = FALSE) %>%
+    clean_names()
+  master_list$templates$conc_guide <- read_csv(
+    file = "https://raw.githubusercontent.com/lukewhiley/targeted_lipid_exploreR_v3/main/templates/LGW_SIL_batch_Ultimate_2023-03-06.csv", 
+    show_col_types = FALSE) %>% 
+    clean_names()
+}
 
 
 # PROCESS: Response ratio and concentration calculations for raw imputed data  ------------------------------------------------------

@@ -13,13 +13,15 @@ master_list$environment$user_packages <- paste0(names(sessionInfo()$otherPkgs), 
 #set project details
 dlg_message("select project directory", type = 'ok');master_list$project_details$project_dir <- rstudioapi::selectDirectory()
 #set lipidExploreR version
-master_list$project_details$lipidExploreR_version <- "3.23"
+master_list$project_details$lipidExploreR_version <- "3.24"
 #set user
 master_list$project_details$user_name <- dlgInput("user", "example_initials")$res
 #set project name
 master_list$project_details$project_name <- dlgInput("project", basename(paste0(master_list$project_details$project_dir)))$res
 #set qc-type
 master_list$project_details$qc_type <- dlgInput("qc type used - tag MUST be in filename of mzML files (matched case)", "LTR/SR/PQC")$res
+#set qc-type
+master_list$project_details$is_ver <- dlgInput("SIL internal standard version used (v1 = pre-2023, v2 = post-2023)", "v1/v2")$res
 #create summary table for report
 master_list$summary_tables$project_summary <- tibble(unlist(master_list$project_details)) %>%
   add_column("Project detail" = c("local directory", "lipidExploreR version", "user initials", "project name", "project qc type"),
@@ -46,10 +48,19 @@ if(!dir.exists(paste0(master_list$project_details$project_dir, "/data/batch_corr
 if(!dir.exists(paste0(master_list$project_details$project_dir, "/html_report"))){dir.create(paste0(master_list$project_details$project_dir, "/html_report"))}
 
 #read in mrm_guide from github
+if(master_list$project_details$is_ver == "v1"){
 master_list$templates$mrm_guides$mrm_guide <- read_csv(
   paste0(master_list$project_details$github_master_dir,
-         "/templates/LGW_lipid_mrm_template.csv"),
+         "/templates/LGW_lipid_mrm_template_v1.csv"),
   show_col_types = FALSE) 
+}
+
+if(master_list$project_details$is_ver == "v2"){
+  master_list$templates$mrm_guides$mrm_guide <- read_csv(
+    paste0(master_list$project_details$github_master_dir,
+           "/templates/LGW_lipid_mrm_template_v2.csv"),
+    show_col_types = FALSE) 
+}
 
 #source functions
 #RT finder
