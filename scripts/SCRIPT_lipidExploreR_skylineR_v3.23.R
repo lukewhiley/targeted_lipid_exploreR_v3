@@ -13,7 +13,7 @@ master_list$environment$user_packages <- paste0(names(sessionInfo()$otherPkgs), 
 #set project details
 dlg_message("select project directory", type = 'ok');master_list$project_details$project_dir <- rstudioapi::selectDirectory()
 #set lipidExploreR version
-master_list$project_details$lipidExploreR_version <- "3.24"
+master_list$project_details$lipidExploreR_version <- "3.23"
 #set user
 master_list$project_details$user_name <- dlgInput("user", "example_initials")$res
 #set project name
@@ -24,7 +24,8 @@ master_list$project_details$qc_type <- dlgInput("qc type used - tag MUST be in f
 master_list$project_details$is_ver <- dlgInput("SIL internal standard version used (v1 = pre-2023, v2 = post-2023)", "v1/v2")$res
 #create summary table for report
 master_list$summary_tables$project_summary <- tibble(unlist(master_list$project_details)) %>%
-  add_column("Project detail" = c("local directory", "lipidExploreR version", "user initials", "project name", "project qc type"),
+  add_column("Project detail" = c(
+    "local directory", "lipidExploreR version", "user initials", "project name", "project qc type", "int. std. version"),
              .before = 1)
 master_list$summary_tables$project_summary <- setNames(master_list$summary_tables$project_summary, c("Project detail", "value"))
 
