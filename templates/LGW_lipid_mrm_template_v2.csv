@@ -1,11 +1,11 @@
 ﻿Molecule List Name,Precursor Name,Precursor Mz,Precursor Charge,Product Mz,Product Charge,Explicit Retention Time,Explicit Retention Time Window,Note,Source ,control_chart
-CE,CE(14:0),614.6,1,369.4,1,11.6,0.5,SIL_14:1 cholesteryl-d7 ester,,TRUE
-CE,CE(16:0),642.6,1,369.4,1,12.295,0.5,SIL_16:1 cholesteryl-d7 ester,,FALSE
-CE,CE(16:1),640.6,1,369.4,1,11.615,0.5,SIL_16:1 cholesteryl-d7 ester,,TRUE
-CE,CE(18:0),670.6,1,369.4,1,12.845,0.5,SIL_18:1 cholesteryl-d7 ester,,FALSE
-CE,CE(18:1),668.6,1,369.4,1,12.31,0.5,SIL_18:1 cholesteryl-d7 ester,,TRUE
-CE,CE(18:2),666.6,1,369.4,1,11.685,0.5,SIL_18:1 cholesteryl-d7 ester,,FALSE
-CE,CE(18:3),664.6,1,369.4,1,11.3,0.5,SIL_18:1 cholesteryl-d7 ester,,FALSE
+CE,CE(14:0),614.6,1,369.4,1,11.6,0.5,SIL_20:3 cholesteryl-d7 ester,,FALSE
+CE,CE(16:0),642.6,1,369.4,1,12.295,0.5,SIL_20:3 cholesteryl-d7 ester,,FALSE
+CE,CE(16:1),640.6,1,369.4,1,11.615,0.5,SIL_20:3 cholesteryl-d7 ester,,FALSE
+CE,CE(18:0),670.6,1,369.4,1,12.845,0.5,SIL_20:3 cholesteryl-d7 ester,,FALSE
+CE,CE(18:1),668.6,1,369.4,1,12.31,0.5,SIL_20:3 cholesteryl-d7 ester,,FALSE
+CE,CE(18:2),666.6,1,369.4,1,11.685,0.5,SIL_20:3 cholesteryl-d7 ester,,FALSE
+CE,CE(18:3),664.6,1,369.4,1,11.3,0.5,SIL_20:3 cholesteryl-d7 ester,,FALSE
 CE,CE(20:0),698.7,1,369.4,1,13.02,0.5,SIL_20:3 cholesteryl-d7 ester,,FALSE
 CE,CE(20:1),696.7,1,369.4,1,12.82,0.5,SIL_20:3 cholesteryl-d7 ester,,FALSE
 CE,CE(20:2),694.6,1,369.4,1,12.37,0.5,SIL_20:3 cholesteryl-d7 ester,,FALSE

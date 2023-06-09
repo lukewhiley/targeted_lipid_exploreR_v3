@@ -218,7 +218,7 @@ lgw_signal_correction <- function(FUNC_project_directory,
                samFile =  samFile,
                Frule = 0.8,
                MLmethod = 'QCRLSC',
-               QCspan = 0,
+               QCspan = 0.5,
                imputeM = "minHalf",
                plot = FALSE,
                coCV = FUNC_option_coCV
