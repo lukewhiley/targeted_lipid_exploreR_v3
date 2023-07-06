@@ -34,6 +34,9 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
         #loop to perform individually for each mrm transition
         for(idx_mrm in 3:nrow(FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_header)){
           
+          #run if statement - only perform on transitions containing data
+          if(nrow(FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_chromatogram[[idx_mrm]]) > 0){
+          
           #store precursor and product information
           precursor_mz <- FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_header$precursorIsolationWindowTargetMZ[idx_mrm]
           product_mz <- FUNC_mzR[[idx_plate]][[idx_mzML]]$mzR_header$productIsolationWindowTargetMZ[idx_mrm]
@@ -155,8 +158,10 @@ mzR_mrm_findR <- function(FUNC_mzR, #list from master_list containing $mzR objec
                         "peak_end" = mzml_rt_end)
             )
         }
-        
-      }}}
+        }
+      }
+    }
+    }
   
   #create master list
   FUNC_tibble <- bind_rows(FUNC_tibble) %>%
