@@ -1,7 +1,11 @@
 #impute function
 
+# FUNC_data = tibble containing data
+# FUNC_metabolite_list = character array of metabolites (to extract from data tibble for impute)
+# FUNC_option_impute_missing_data = TRUE/FALSE option to impute
+
 lgw_lipid_impute <- function(FUNC_data,
-                              FUNC_metabolite_list,
+                             FUNC_metabolite_list,
                              FUNC_option_impute_missing_data)
   {
 
