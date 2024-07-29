@@ -57,6 +57,9 @@ lgw_pca <- function(FUNC_data,
   
   #set colours
   plot_colours <- FUNC_project_colours
+  plot_fill <- FUNC_project_fill
+  plot_shape <- FUNC_project_shape
+  plot_size <- FUNC_project_size
 
   #scores plot label
   pca_plot_label <- FUNC_data %>% 
@@ -96,24 +99,25 @@ lgw_pca <- function(FUNC_data,
                        text = ~pca_plot_label, 
                        color = ~pca_colour, 
                        #colors = c(plot_colors[1:length(unique(pca_colour))]), 
-                       colors = plot_colours,
+                       colors = plot_fill,
+                       #size = ~pca_colour, 
                        legendgroup = ~pca_colour,
                        showlegend = NULL,
                        marker = list(size = 10, 
-                                      #color = '#1E90FF', 
                                       opacity = 1,
                                       line = list(
-                                        color = '#000000',
+                                        color = plot_colours,
+                                        #color = '#000000',
                                         width = 1)
                                      )) %>% 
     layout(
       title = paste("PCA - ", title_text, sep = ""),
-           xaxis = x_axis_settings_scores,
-           yaxis = y_axis_settings_scores,
-           #showlegend = TRUE, 
-           margin = list(l = 65, r = 50, b=65, t=85),
-           title = paste0(FUNC_title, ": PCA Scores", "\n", nrow(plot_Val), " samples; ", nrow(plotly_loadings_data), " features")
-           )
+      xaxis = x_axis_settings_scores,
+      yaxis = y_axis_settings_scores,
+      #showlegend = TRUE, 
+      margin = list(l = 65, r = 50, b=65, t=85),
+      title = paste0(FUNC_title, ": PCA Scores", "\n", nrow(plot_Val), " samples; ", nrow(plotly_loadings_data), " features")
+    )
   
   if(FUNC_option_invert_x == TRUE){
     pca_output$plot_scores <- pca_output$plot_scores %>%
