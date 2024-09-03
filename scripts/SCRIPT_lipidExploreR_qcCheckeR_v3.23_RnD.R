@@ -170,7 +170,10 @@ master_list$pca_analysis$data_sorted$sample_qc <- master_list$environment$user_f
   FUNC_plot_label = "sample_name", 
   FUNC_scaling = "Pareto",
   FUNC_title = paste0(master_list$project_details$project_name),
-  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_project_colours = c("black", "black"),
+  FUNC_project_fill = c("steelblue2", "white"),
+  FUNC_project_shape = c(21,21),
+  FUNC_project_size = c(2,2),
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
   FUNC_option_plot_qc = TRUE
