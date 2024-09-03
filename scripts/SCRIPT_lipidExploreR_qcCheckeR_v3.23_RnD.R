@@ -188,7 +188,10 @@ master_list$pca_analysis$data_sorted$plate <- master_list$environment$user_funct
   FUNC_plot_label = "sample_name", 
   FUNC_scaling = "Pareto",
   FUNC_title = paste0(master_list$project_details$project_name),
-  FUNC_project_colours = c(viridisLite::magma(n = length(master_list$project_details$mzml_plate_list))),
+  FUNC_project_fill = c(viridisLite::magma(n = length(master_list$project_details$mzml_plate_list))),
+  FUNC_project_colours = c("black", "black"),
+  FUNC_project_shape = c(21,21),
+  FUNC_project_size = c(2,2),
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
   FUNC_option_plot_qc = TRUE
@@ -354,7 +357,10 @@ master_list$pca_analysis$missing_value_filter$sample_qc <- master_list$environme
   FUNC_plot_label = "sample_name", 
   FUNC_scaling = "Pareto",
   FUNC_title = paste0(master_list$project_details$project_name),
-  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_project_colours = c("black", "black"),
+  FUNC_project_fill = c("steelblue2", "white"),
+  FUNC_project_shape = c(21,21),
+  FUNC_project_size = c(2,2),
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
   FUNC_option_plot_qc = TRUE
@@ -370,7 +376,10 @@ master_list$pca_analysis$missing_value_filter$plate <- master_list$environment$u
   FUNC_plot_label = "sample_name", 
   FUNC_scaling = "Pareto",
   FUNC_title = paste0(master_list$project_details$project_name),
-  FUNC_project_colours = c(viridisLite::magma(n = length(master_list$project_details$mzml_plate_list))),
+  FUNC_project_fill = c(viridisLite::magma(n = length(master_list$project_details$mzml_plate_list))),
+  FUNC_project_colours = c("black", "black"),
+  FUNC_project_shape = c(21,21),
+  FUNC_project_size = c(2,2),
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
   FUNC_option_plot_qc = TRUE
@@ -459,7 +468,8 @@ for(idx_data in names(master_list$data$impute)){
     FUNC_metabolite_list = master_list$data$impute[[idx_data]] %>% 
       select(!contains("sample")) %>% names(),
     FUNC_SIL_guide = master_list$templates$SIL_guide,
-    FUNC_conc_guide = master_list$templates$conc_guide) %>%
+    FUNC_conc_guide = master_list$templates$conc_guide
+    ) %>%
     #ensure no SIL metabolites remain in dataset
     select(!contains("SIL"))
   
@@ -514,7 +524,10 @@ master_list$pca_analysis$concentration$sample_qc <- master_list$environment$user
   FUNC_plot_label = "sample_name", 
   FUNC_scaling = "Pareto",
   FUNC_title = paste0(master_list$project_details$project_name),
-  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_project_colours = c("black", "black"),
+  FUNC_project_fill = c("steelblue2", "white"),
+  FUNC_project_shape = c(21,21),
+  FUNC_project_size = c(2,2),
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
   FUNC_option_plot_qc = TRUE
@@ -530,7 +543,10 @@ master_list$pca_analysis$concentration$plate <- master_list$environment$user_fun
   FUNC_plot_label = "sample_name", 
   FUNC_scaling = "Pareto",
   FUNC_title = paste0(master_list$project_details$project_name),
-  FUNC_project_colours = c(viridisLite::magma(n = length(master_list$project_details$mzml_plate_list))),
+  FUNC_project_fill = c(viridisLite::magma(n = length(master_list$project_details$mzml_plate_list))),
+  FUNC_project_colours = c("black", "black"),
+  FUNC_project_shape = c(21,21),
+  FUNC_project_size = c(2,2),
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
   FUNC_option_plot_qc = TRUE
@@ -585,7 +601,10 @@ master_list$pca_analysis$concentration_rsd_filtered$sample_qc <- master_list$env
   FUNC_plot_label = "sample_name", 
   FUNC_scaling = "Pareto",
   FUNC_title = paste0(master_list$project_details$project_name),
-  FUNC_project_colours = c("steelblue2", "white"),
+  FUNC_project_colours = c("black", "black"),
+  FUNC_project_fill = c("steelblue2", "white"),
+  FUNC_project_shape = c(21,21),
+  FUNC_project_size = c(2,2),
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
   FUNC_option_plot_qc = TRUE
@@ -601,7 +620,10 @@ master_list$pca_analysis$concentration_rsd_filtered$plate <- master_list$environ
   FUNC_plot_label = "sample_name", 
   FUNC_scaling = "Pareto",
   FUNC_title = paste0(master_list$project_details$project_name),
-  FUNC_project_colours = c(viridisLite::magma(n = length(master_list$project_details$mzml_plate_list))),
+  FUNC_project_fill = c(viridisLite::magma(n = length(master_list$project_details$mzml_plate_list))),
+  FUNC_project_colours = c("black", "black"),
+  FUNC_project_shape = c(21,21),
+  FUNC_project_size = c(2,2),
   FUNC_option_invert_y = FALSE,
   FUNC_option_invert_x = FALSE,
   FUNC_option_plot_qc = TRUE
